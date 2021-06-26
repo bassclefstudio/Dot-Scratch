@@ -1,0 +1,364 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+addLegacy.s1 = 23
+compression = 0008090801480839080102174709040909390906000809080148083908010217470904090939090699000848080148280028010217462704480924090224092408012427002702242824270124252411050008480801482800280102174627044809240902240924080124270027022428242701242524110599000804080100090409030408041801090309180209031903020418091801081808020108022002011418140802190319130214182418021913291302200220120120123012011418143602153615190115192419013012302401291329240230242424010217172104131210120515121812052217221405242424190500080408010009040903040804180109030918020903190302041809180108180802010802200201141814080219031913021418241802191329130220022012012012301201141814360215361519011519241901301230240129132924023024242401021717210413121012051512181205221722140524242419059900080908010908091305091324130124082423012423092301092309130122182211060918141805141820180119032903012408290805290829280129281928012726311806292339230139233918053918441805391839130539132913013918331801092300230102170224043515202606331833130100080908010908091305091324130124082423012423092301092309130122182211060918141805141820180119032903012408290805290829280129281928012726311806292339230139233918053918441805391839130539132913013918331801092300230102170224043515202606331833130199000809080124113411013411341801341824180124182423012423342301241233120233123317022412241101241824120525193117063415391501480048000134233427013423341805342739270139273923013716372606342339230539274427010217422604990008040801040804130504130913010913141305041800180101194528064330473001431847180543184330014730471801432335230135233528013528292801292829260104180413010913091101292824280524282431012431403101403140300140304330013724122306140814280114131913010116171204110811000199
+compression.c1 = 100
+compression.s1 = 99
+compressionKey = ~`!@#$%^&*()_-+={[}]|\:;"'<,>.?/¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ·¸¹º»¼½¾01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ ¿
+convert.c1 = 26
+convert.c2 = 6
+convertType = Wall
+isDuplicate = false
+isDuplicate.c1 = 28
+list.c1 = 851
+list.s1 = 99
+list.s2 = 
+list.s3 = 851
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+file.segments = { }
+json.keys = { }
+json.levels = { }
+json.path = { }
+json.values = { }
+json.view.s1 = { }
+legacy.compressionKeys = { 
+    ~
+    `
+    !
+    @
+    #
+    $
+    %
+    ^
+    &
+    *
+    (
+    )
+    _
+    -
+    +
+    =
+    {
+    [
+    }
+    ]
+    |
+    \
+    :
+    ;
+    "
+    '
+    <
+    ,
+    >
+    .
+    ?
+    /
+    
+    ¡
+    ¢
+    £
+    ¤
+    ¥
+    ¦
+    §
+    ¨
+    ©
+    ª
+    «
+    ¬
+    ®
+    ¯
+    °
+    ±
+    ²
+    ³
+    ´
+    µ
+    ·
+    ¸
+    ¹
+    º
+    »
+    ¼
+    ½
+    ¾
+    0
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    0
+    A
+    B
+    C
+    D
+    E
+    F
+    G
+    H
+    I
+    J
+    K
+    L
+    M
+    N
+    O
+    P
+    Q
+    R
+    S
+    T
+    U
+    V
+    W
+    X
+    Y
+    Z
+     
+    ¿
+}
+legacy.levels = { 
+    00080908014808390801021747090409093909060008090801480839080102174709040909390906
+    0008480801482800280102174627044809240902240924080124270027022428242701242524110500084808014828002801021746270448092409022409240801242700270224282427012425241105
+    00080408010009040903040804180109030918020903190302041809180108180802010802200201141814080219031913021418241802191329130220022012012012301201141814360215361519011519241901301230240129132924023024242401021717210413121012051512181205221722140524242419050008040801000904090304080418010903091802090319030204180918010818080201080220020114181408021903191302141824180219132913022002201201201230120114181436021536151901151924190130123024012913292402302424240102171721041312101205151218120522172214052424241905
+    000809080109080913050913241301240824230124230923010923091301221822110609181418051418201801190329030124082908052908292801292819280127263118062923392301392339180539184418053918391305391329130139183318010923002301021702240435152026063318331301000809080109080913050913241301240824230124230923010923091301221822110609181418051418201801190329030124082908052908292801292819280127263118062923392301392339180539184418053918391305391329130139183318010923002301021702240435152026063318331301
+    000809080124113411013411341801341824180124182423012423342301241233120233123317022412241101241824120525193117063415391501480048000134233427013423341805342739270139273923013716372606342339230539274427010217422604
+    00080408010408041305041309130109131413050418001801011945280643304730014318471805431843300147304718014323352301352335280135282928012928292601041804130109130911012928242805242824310124314031014031403001403043300137241223061408142801141319130101161712041108110001
+}
+levelJsons = { }
+string.closeBraces = { }
+string.escapableCharacters = { }
+string.getIndicesOf = { }
+string.join.input = { }
+string.openBraces = { }
+string.split = { }
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(OpenLegacy)
+{
+    Call Convert Legacy File (.dot3) to Game File (.dot4);
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Add Legacy Segment(string X1)(string Y1)(string X2)(string Y2) type(string T) (warp=true)
+{
+    If (T == 4)
+    {
+        Call Create Segment from Legacy((X1 * 10))((Y1 * 10)) to("")("") metadata("Start")("")("");
+        Call Create Segment from Legacy((X2 * 10))((Y2 * 10)) to("")("") metadata("End")("")("");
+    }
+    Else
+    {
+        If (T == 6)
+        {
+            addLegacy.s1 = (List.Length(SegmentType) + 1);
+            Call Create Segment from Legacy((X1 * 10))((Y1 * 10)) to("")("") metadata("Portal")(Operator.Join("Portal", (addLegacy.s1 + 1)))("");
+            Call Create Segment from Legacy((X2 * 10))((Y2 * 10)) to("")("") metadata("Portal")(Operator.Join("Portal", addLegacy.s1))("");
+        }
+        Else
+        {
+            Call Convert Type(T);
+            Call Create Segment from Legacy((X1 * 10))((Y1 * 10)) to((X2 * 10))((Y2 * 10)) metadata(convertType)("")("");
+        }
+    }
+}
+
+Define Convert Legacy File (.dot3) to Game File (.dot4) (warp=false)
+{
+    Event.BroadcastAndWait("StopPhysics");
+    Event.BroadcastAndWait("StopPlayerDraw");
+    Event.BroadcastAndWait("ClearLevels");
+    Event.BroadcastAndWait("ClearMap");
+    If (Not (((Legacy File (.dot3) * 1) == Legacy File (.dot3))))
+    {
+        DialogContent = "Decompressing Legacy File (.dot3)";
+        DialogProgress = 0;
+        Event.Broadcast("ShowDialog");
+        Call Legacy (.dot3) Decompress(Legacy File (.dot3));
+        Legacy File (.dot3) = compression;
+        DialogProgress = 1;
+        Event.BroadcastAndWait("HideDialog");
+    }
+    DialogContent = "Reading .dot3 Levels...";
+    DialogProgress = 0;
+    Event.Broadcast("ShowDialog");
+    Call List Legacy File (.dot3) levels;
+    Event.BroadcastAndWait("HideDialog");
+    DialogContent = "Saving .dot4 Levels...";
+    DialogProgress = 0;
+    Event.Broadcast("ShowDialog");
+    convert.c2 = 0;
+    Repeat (List.Length(legacy.levels))
+    {
+        convert.c2 += 1;
+        DialogProgress = (convert.c2 / List.Length(legacy.levels));
+        Call Process Legacy Level;
+        Level# = convert.c2;
+        LevelName = Operator.Join("Level ", convert.c2);
+        Event.BroadcastAndWait("SaveLevel");
+        Event.BroadcastAndWait("ClearMap");
+    }
+    Event.BroadcastAndWait("SaveFile");
+    Event.BroadcastAndWait("HideDialog");
+}
+
+Define Convert Type(string T) (warp=true)
+{
+    If (T == 1)
+    {
+        convertType = "Wall";
+    }
+    Else
+    {
+        If (T == 2)
+        {
+            convertType = "Lava";
+        }
+        Else
+        {
+            If (T == 3)
+            {
+                convertType = "Bounce";
+            }
+            Else
+            {
+                If (T == 5)
+                {
+                    convertType = "Flip";
+                }
+                Else
+                {
+                }
+            }
+        }
+    }
+}
+
+Define Create Segment from Legacy(string X1)(string Y1) to(string X2)(string Y2) metadata(string T)(string Arg1)(string Arg2) (warp=true)
+{
+    Call Is Duplicate?(X1)(Y1) to(X2)(Y2);
+    If (isDuplicate == "false")
+    {
+        List.Add(SegmentX1, X1);
+        List.Add(SegmentY1, Y1);
+        List.Add(SegmentX2, X2);
+        List.Add(SegmentY2, Y2);
+        List.Add(SegmentType, T);
+        List.Add(SegmentId, Operator.Join(T, List.Length(SegmentType)));
+        List.Add(SegmentArg1, Arg1);
+        List.Add(SegmentArg2, Arg2);
+    }
+}
+
+Define Initialize (warp=true)
+{
+    compressionKey = "~`!@#$%^&*()_-+={[}]|\:;"'<,>.?/¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ·¸¹º»¼½¾01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ ¿";
+    List.DeleteAll(legacy.compressionKeys);
+    compression.c1 = 0;
+    Repeat (Variable.Length(compressionKey))
+    {
+        compression.c1 += 1;
+        List.Add(legacy.compressionKeys, Operator.LetterOf(compressionKey, compression.c1));
+    }
+}
+
+Define Is Duplicate?(string X1)(string Y1) to(string X2)(string Y2) (warp=true)
+{
+    isDuplicate = "false";
+    isDuplicate.c1 = 0;
+    Repeat (List.Length(SegmentType))
+    {
+        isDuplicate.c1 += 1;
+        If (((SegmentX1[isDuplicate.c1] == X1) And (SegmentY1[isDuplicate.c1] == Y1)) And ((SegmentX2[isDuplicate.c1] == X2) And (SegmentY2[isDuplicate.c1] == Y2)))
+        {
+            isDuplicate = "true";
+        }
+    }
+}
+
+Define Legacy (.dot3) Compress(string Data) (warp=false)
+{
+    compression.c1 = 0;
+    compression = "";
+    Repeat ((Variable.Length(Data) / 2))
+    {
+        compression.c1 += 1;
+        compression = Operator.Join(compression, legacy.compressionKeys[(Operator.Join(Operator.LetterOf(Data, ((2 * compression.c1) - 1)), Operator.LetterOf(Data, (2 * compression.c1))) + 1)]);
+    }
+}
+
+Define Legacy (.dot3) Decompress(string Data) (warp=true)
+{
+    compression.c1 = 0;
+    compression = "";
+    Repeat (Variable.Length(Data))
+    {
+        compression.c1 += 1;
+        compression.s1 = (List.IndexOf(legacy.compressionKeys, Operator.LetterOf(Data, compression.c1)) - 1);
+        If (Variable.Length(compression.s1) == 1)
+        {
+            compression = Operator.Join(compression, Operator.Join(0, compression.s1));
+        }
+        Else
+        {
+            compression = Operator.Join(compression, compression.s1);
+        }
+    }
+}
+
+Define List Legacy File (.dot3) levels (warp=true)
+{
+    list.c1 = 0;
+    list.s1 = "";
+    list.s2 = "";
+    list.s3 = (Variable.Length(Legacy File (.dot3)) / 2);
+    List.DeleteAll(legacy.levels);
+    Repeat (list.s3)
+    {
+        list.c1 += 1;
+        DialogProgress = (list.c1 / list.s3);
+        list.s1 = Operator.Join(Operator.LetterOf(Legacy File (.dot3), ((list.c1 * 2) - 1)), Operator.LetterOf(Legacy File (.dot3), (list.c1 * 2)));
+        If (list.s1 == 99)
+        {
+            List.Add(legacy.levels, list.s2);
+            list.s2 = "";
+        }
+        Else
+        {
+            list.s2 = Operator.Join(list.s2, list.s1);
+        }
+    }
+}
+
+Define Process Legacy Level (warp=true)
+{
+    convert.c1 = 0;
+    Repeat ((Variable.Length(legacy.levels[convert.c2]) / 10))
+    {
+        Call Add Legacy Segment(Operator.Join(Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 1)), Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 2))))(Operator.Join(Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 3)), Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 4))))(Operator.Join(Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 5)), Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 6))))(Operator.Join(Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 7)), Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 8)))) type(Operator.Join(Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 9)), Operator.LetterOf(legacy.levels[convert.c2], ((convert.c1 * 10) + 10))));
+        convert.c1 += 1;
+    }
+}
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg

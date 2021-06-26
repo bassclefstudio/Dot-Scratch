@@ -1,0 +1,219 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+frames.c1 = 15
+frames.s1 = 0.033066666666667
+lastFrame = 24.976
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+frames = { 
+    0.034000000000002
+    0.032
+    0.033999999999999
+    0.033000000000001
+    0.032
+    0.032999999999998
+    0.033000000000001
+    0.044999999999998
+    0.022000000000002
+    0.032
+    0.033000000000001
+    0.033999999999999
+    0.032
+    0.033999999999999
+    0.033000000000001
+}
+menu options = { }
+
+
+//----- Green flag events ---------------------------------------------------------------------------------------------
+
+WhenGreenFlagClicked()
+{
+    Event.BroadcastAndWait("Initialize");
+    Call Show Language Error Dialog;
+    Sound.Play(Tada);
+    File# = 1;
+    Call Load Game;
+    Call Start Game;
+    MIDI: Song = "Ondine";
+    Event.Broadcast("MIDI: Play");
+}
+
+
+//----- Key pressed events --------------------------------------------------------------------------------------------
+
+WhenKeyPressed(space)
+{
+    Call Restore Game;
+}
+
+WhenKeyPressed(c)
+{
+    Event.BroadcastAndWait("StopGame");
+    Event.BroadcastAndWait("ResetData");
+    Stop(all);
+}
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(CalcFramerate)
+{
+    Call Calculate Framerates((Sensing.Timer() - lastFrame))(15);
+    lastFrame = Sensing.Timer();
+}
+
+WhenBroadcastReceived(CopyFile)
+{
+    List.DeleteAll(Copy Game Files);
+    List.Add(Copy Game Files, Game File (.dot4));
+    List.Show(Copy Game Files);
+    Stop(all);
+}
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(LoadGame)
+{
+    Call Stop Game;
+    Call Load Game;
+    Call Start Game;
+}
+
+WhenBroadcastReceived(NewLevel)
+{
+    Event.BroadcastAndWait("LevelChanged");
+}
+
+WhenBroadcastReceived(StartGame)
+{
+    Call Start Game;
+}
+
+WhenBroadcastReceived(StartPlayerDraw)
+{
+    PlayerDrawEnabled = "true";
+}
+
+WhenBroadcastReceived(StopGame)
+{
+    Call Stop Game;
+}
+
+WhenBroadcastReceived(StopPlayerDraw)
+{
+    PlayerDrawEnabled = "false";
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Calculate Framerates(string Current Time)(string AvgSize) (warp=true)
+{
+    If ((Current Time > 0) And (Current Time < 0.1))
+    {
+        List.Add(frames, Current Time);
+    }
+    If (List.Length(frames) > AvgSize)
+    {
+        List.DeleteItem(frames, 1);
+    }
+    frames.c1 = 0;
+    frames.s1 = 0;
+    Repeat (List.Length(frames))
+    {
+        frames.c1 += 1;
+        frames.s1 += frames[frames.c1];
+    }
+    frames.s1 = (frames.s1 / List.Length(frames));
+    FPS = Operator.Round((1 / frames.s1));
+    FrameSpeed = (Operator.Round(((28 * 2) / FPS)) / 2);
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    List.Hide(Copy Game Files);
+    List.DeleteAll(Copy Game Files);
+    CameraEnabled = "false";
+    DragEnabled = "false";
+    DrawEnabled = "false";
+    DialogEnabled = "false";
+    EditorEnabled = "false";
+    KeyboardInputEnabled = "false";
+    MouseInputEnabled = "false";
+    PhysicsEnabled = "false";
+    PlayerDrawEnabled = "false";
+    RaycastDrawEnabled = "false";
+    RaycastEnabled = "false";
+    Paused = "false";
+    UIEnabled = "false";
+    TextSubsystemEnabled = "true";
+    MusicEnabled = "true";
+    List.DeleteAll(frames);
+    FrameSpeed = 1;
+}
+
+Define Load Game (warp=false)
+{
+    Event.BroadcastAndWait("GetStoredFile");
+    Event.BroadcastAndWait("OpenFile");
+    Level# = 1;
+    Event.BroadcastAndWait("OpenLevel");
+}
+
+Define Restore Game (warp=true)
+{
+    List.Hide(Copy Game Files);
+    List.DeleteAll(Copy Game Files);
+    If (UIEnabled == "true")
+    {
+        Event.Broadcast("StartUI");
+    }
+}
+
+Define Show Language Error Dialog (warp=false)
+{
+    If (LanguageSupported == "false")
+    {
+        DialogType = ErrorDialogType;
+        DialogContent = "This language is not fully supported. Translations provided by Google Translate. Not all characters may render correctly.";
+        Event.BroadcastAndWait("ShowDialog");
+    }
+}
+
+Define Start Game (warp=false)
+{
+    Event.Broadcast("StartCamera");
+    Event.Broadcast("StartPlayerDraw");
+    Event.Broadcast("StartDraw");
+    Event.Broadcast("StartPhysics");
+    Event.Broadcast("StartAutomation");
+    Event.Broadcast("StartKeyboard");
+}
+
+Define Stop Game (warp=false)
+{
+    Event.BroadcastAndWait("StopCamera");
+    Event.BroadcastAndWait("StopPlayerDraw");
+    Event.BroadcastAndWait("StopDraw");
+    Event.BroadcastAndWait("StopPhysics");
+    Event.BroadcastAndWait("StopAutomation");
+    Event.BroadcastAndWait("StopKeyboard");
+}
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg
+
+
+//----- Sounds --------------------------------------------------------------------------------------------------------
+
+Tada.wav

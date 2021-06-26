@@ -1,0 +1,804 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+angle = -90
+automate.accRatio = 0
+automate.c1 = 54
+automate.centerX = 150
+automate.centerY = 160.157705974
+automate.moveRatio = 0.00098663580000002
+automate.newX = 150
+automate.newY = 140.039465432
+automationClock = 18.7
+automationSpeed = 100
+closest.c1 = 46
+collisionDistance = 100
+collisionId = 
+collisions.c1 = 54
+collisions.speed = 100
+collisionU = 
+distanceSquared = 12853.443917039
+drag = 0.1
+findDistance.u = 
+gravity.c1 = 8
+gravityAx = 0
+gravityAy = 1
+isCollision = false
+jumpDelay = 4
+jumpSpeed = 12
+maxSlope = 8
+maxV = 16.5
+minV = 0.25
+mouseThreshold = 9
+moveSpeed = 1
+physics.accCos = 0
+physics.accMag = 1
+physics.accSin = 1
+physics.aXsign = 1
+physics.aYsign = 1
+physics.collisionHandled = false
+physics.collisionId = 5
+physics.grounded = 4
+physics.priorX = 242.55106710563
+physics.priorY = 391
+physics.pX = 242.55106710563
+physics.pY = 390
+physics.restXsign = 1
+physics.restYsign = 1
+physics.slope = 2
+physics.slopeX = 0
+physics.slopeY = -0.5
+physics.vXsign = 1
+physics.vYsign = 1
+platforms.command = false
+platforms.gravity = 
+platforms.jump = false
+platforms.portal = false
+playerAx = 0
+playerAy = 1
+playerFloorId = 5
+playerVx = 0
+playerVy = 0
+portal.c1 = 13
+portal.dX = 80
+portal.dY = 0
+portal.s1 = 0
+portal.x = 0
+portal.y = -6
+portalId = 13
+restAx = 0
+restAy = 0
+start.c1 = 19
+vectorSide = 1
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+collisionTests = { 
+    End
+}
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(CalculateMouse)
+{
+    Call Get closest segment to(MouseX)(MouseY);
+}
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(NewLevel)
+{
+    Call Reset Automation;
+    Call Reset Player;
+}
+
+WhenBroadcastReceived(RestartLevel)
+{
+    Call Reset Automation;
+    Call Reset Player;
+}
+
+WhenBroadcastReceived(StartEditor)
+{
+    Call Reset Automation;
+    Call Automate Level;
+}
+
+WhenBroadcastReceived(StartPhysics)
+{
+    Call Start Physics;
+}
+
+WhenBroadcastReceived(StopPhysics)
+{
+    PhysicsEnabled = "false";
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Automate Level (warp=true)
+{
+    automate.c1 = 0;
+    restAx = 0;
+    restAy = 0;
+    Repeat (List.Length(SegmentType))
+    {
+        automate.c1 += 1;
+        If (SegmentType[automate.c1] == "Move")
+        {
+            Call Move Segment(List.IndexOf(SegmentId, SegmentArg1[automate.c1])) along(automate.c1) (clock(automationClock) );
+        }
+    }
+    automationClock += (FrameSpeed / automationSpeed);
+}
+
+Define Bound Velocity from zero(string Zero) to max(string Max) (warp=true)
+{
+    Call Calculate Vector Signs;
+    If (abs(playerVx) < Zero)
+    {
+        playerVx = 0;
+    }
+    Else
+    {
+        If (abs(playerVx) > Max)
+        {
+            playerVx = (physics.vXsign * Max);
+        }
+    }
+    If (abs(playerVy) < Zero)
+    {
+        playerVy = 0;
+    }
+    Else
+    {
+        If (abs(playerVy) > Max)
+        {
+            playerVy = (physics.vYsign * Max);
+        }
+    }
+}
+
+Define Build Acceleration from(string X)(string Y) (warp=true)
+{
+    playerAx = gravityAx;
+    playerAy = gravityAy;
+}
+
+Define Calculate Acceleration Magnitudes (warp=true)
+{
+    Call Get Distance Between(playerAx)(playerAy) and(0)(0);
+    physics.accMag = sqrt(distanceSquared);
+    physics.accCos = (playerAx / physics.accMag);
+    physics.accSin = (playerAy / physics.accMag);
+}
+
+Define Calculate Angle of(string X)(string Y) (warp=true)
+{
+    If (Y == 0)
+    {
+        If (X < 0)
+        {
+            angle = 90;
+        }
+        Else
+        {
+            angle = -90;
+        }
+    }
+    Else
+    {
+        If (Y < 0)
+        {
+            angle = atan((X / Y));
+        }
+        Else
+        {
+            angle = (180 + atan((X / Y)));
+        }
+    }
+}
+
+Define Calculate Vector Signs (warp=true)
+{
+    physics.vXsign = (((playerVx < 0) * -2) + 1);
+    physics.vYsign = (((playerVy < 0) * -2) + 1);
+    physics.aXsign = (((playerAx < 0) * -2) + 1);
+    physics.aYsign = (((playerAy < 0) * -2) + 1);
+    physics.restXsign = (((restAx < 0) * -2) + 1);
+    physics.restYsign = (((restAy < 0) * -2) + 1);
+}
+
+Define Find Portal(string Id) (warp=true)
+{
+    portal.c1 = 0;
+    portalId = 0;
+    Repeat Until ((portal.c1 > List.Length(SegmentType)) Or (Not ((portalId == 0))))
+    {
+        portal.c1 += 1;
+        If (((SegmentType[portal.c1] == "Portal") Or (SegmentType[portal.c1] == "Teleport")) And (SegmentId[portal.c1] == Id))
+        {
+            portalId = portal.c1;
+        }
+    }
+}
+
+Define Get closest segment to(string X)(string Y) (warp=true)
+{
+    closest.c1 = 0;
+    ClosestId = 0;
+    ClosestDistanceSquared = "";
+    Repeat (List.Length(SegmentType))
+    {
+        closest.c1 += 1;
+        Call Get distance between wall(closest.c1) and point(X)(Y);
+        If ((ClosestId == 0) Or (distanceSquared < (ClosestDistanceSquared + mouseThreshold)))
+        {
+            ClosestId = closest.c1;
+            ClosestDistanceSquared = distanceSquared;
+            If (SegmentY2[closest.c1] == "")
+            {
+                ClosestCollisionType = 1;
+            }
+            Else
+            {
+                ClosestCollisionType = 0;
+                Call Get Distance Between(SegmentX1[closest.c1])(SegmentY1[closest.c1]) and(X)(Y);
+                If (distanceSquared < 100)
+                {
+                    ClosestCollisionType = 1;
+                }
+                Call Get Distance Between(SegmentX2[closest.c1])(SegmentY2[closest.c1]) and(X)(Y);
+                If (distanceSquared < 100)
+                {
+                    ClosestCollisionType = 2;
+                }
+            }
+        }
+    }
+}
+
+Define Get collision between wall(string #) and point(string X)(string Y) distance(string D) (warp=true)
+{
+    isCollision = "";
+    If (Not ((SegmentX2[#] == "")))
+    {
+        Call Get is(X)(Y) within bounding box(#) padding(D);
+        If (isCollision == "true")
+        {
+            isCollision = "";
+        }
+    }
+    If (isCollision == "")
+    {
+        Call Get distance between wall(#) and point(X)(Y);
+        If (distanceSquared < D)
+        {
+            isCollision = "true";
+            collisionId = #;
+        }
+        Else
+        {
+            isCollision = "false";
+        }
+    }
+}
+
+Define Get collisions for(string X)(string Y) distance(string D) (warp=true)
+{
+    isCollision = "false";
+    collisionId = "";
+    collisionU = "";
+    collisions.c1 = 0;
+    Repeat (List.Length(SegmentType))
+    {
+        collisions.c1 += 1;
+        If List.ContainsItem(collisionTests, SegmentType[collisions.c1])
+        {
+            Call Get distance between wall(collisions.c1) and point(X)(Y);
+            If (Operator.Round(distanceSquared) < D)
+            {
+                isCollision = "true";
+                collisionId = collisions.c1;
+                If (Not ((findDistance.u == "")))
+                {
+                    collisionU = findDistance.u;
+                }
+            }
+        }
+    }
+}
+
+Define Get Distance Between(string X1)(string Y1) and(string X2)(string Y2) (warp=true)
+{
+    distanceSquared = (((X2 - X1) * (X2 - X1)) + ((Y2 - Y1) * (Y2 - Y1)));
+}
+
+Define Get distance between line(string X1)(string Y1)(string X2)(string Y2) and point(string X)(string Y) (warp=true)
+{
+    Call Get Distance Between(X1)(Y1) and(X2)(Y2);
+    findDistance.u = ((((X - X1) * (X2 - X1)) + ((Y - Y1) * (Y2 - Y1))) / distanceSquared);
+    If (findDistance.u > 1)
+    {
+        Call Get Distance Between(X2)(Y2) and(X)(Y);
+    }
+    Else
+    {
+        If (findDistance.u < 0)
+        {
+            Call Get Distance Between(X1)(Y1) and(X)(Y);
+        }
+        Else
+        {
+            Call Get Distance Between((X1 + ((X2 - X1) * findDistance.u)))((Y1 + ((Y2 - Y1) * findDistance.u))) and(X)(Y);
+        }
+    }
+}
+
+Define Get distance between wall(string #) and point(string X)(string Y) (warp=true)
+{
+    findDistance.u = "";
+    If (SegmentX2[#] == "")
+    {
+        Call Get Distance Between(SegmentX1[#])(SegmentY1[#]) and(X)(Y);
+    }
+    Else
+    {
+        Call Get distance between line(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) and point(X)(Y);
+    }
+}
+
+Define Get is(string X)(string Y) in bounding box(string X1)(string Y1)(string X2)(string Y2) padding(string P) (warp=true)
+{
+    If (X2 > X1)
+    {
+        If (Y2 > Y1)
+        {
+            isCollision = (Not (((((X - P) > X2) Or ((X + P) < X1)) Or (((Y - P) > Y2) Or ((Y + P) < Y1)))));
+        }
+        Else
+        {
+            isCollision = (Not (((((X - P) > X2) Or ((X + P) < X1)) Or (((Y - P) > Y1) Or ((Y + P) < Y2)))));
+        }
+    }
+    Else
+    {
+        If (Y2 > Y1)
+        {
+            isCollision = (Not (((((X - P) > X1) Or ((X + P) < X2)) Or (((Y - P) > Y2) Or ((Y + P) < Y1)))));
+        }
+        Else
+        {
+            isCollision = (Not (((((X - P) > X1) Or ((X + P) < X2)) Or (((Y - P) > Y1) Or ((Y + P) < Y2)))));
+        }
+    }
+}
+
+Define Get is(string X)(string Y) within bounding box(string #) padding(string P) (warp=true)
+{
+    Call Get is(X)(Y) in bounding box(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) padding(P);
+}
+
+Define Get Side of(string X)(string Y) along(string X1)(string Y1)(string X2)(string Y2) (warp=true)
+{
+    vectorSide = ((((X - X1) * (Y2 - Y1)) - ((Y - Y1) * (X2 - X1))) > 0);
+}
+
+Define Get Side of(string X)(string Y) along wall(string #) (warp=true)
+{
+    Call Get Side of(X)(Y) along(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]);
+}
+
+Define Handle collisions(string UseSlope) (warp=true)
+{
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "Wall");
+    collisions.speed = collisionDistance;
+    Call Get collisions for(physics.pX)(physics.pY) distance(collisions.speed);
+    physics.collisionHandled = isCollision;
+    If (isCollision == "true")
+    {
+        physics.collisionHandled = "true";
+        physics.collisionId = collisionId;
+        physics.slope = 0;
+        physics.slopeX = (((-0.5 * FrameSpeed) * physics.vXsign) * (physics.aXsign * physics.accCos));
+        physics.slopeY = (((-0.5 * FrameSpeed) * physics.vYsign) * (physics.aYsign * physics.accSin));
+        physics.priorX = physics.pX;
+        physics.priorY = physics.pY;
+        If (UseSlope == "true")
+        {
+            Repeat Until ((isCollision == "false") Or (Not ((physics.slope < maxSlope))))
+            {
+                physics.slope += 1;
+                physics.pX += physics.slopeX;
+                physics.pY += physics.slopeY;
+                Call Get collisions for(physics.pX)(physics.pY) distance(collisions.speed);
+            }
+        }
+        Else
+        {
+            Repeat Until (isCollision == "false")
+            {
+                physics.slope += 1;
+                physics.pX += physics.slopeX;
+                physics.pY += physics.slopeY;
+                Call Get collisions for(physics.pX)(physics.pY) distance(collisions.speed);
+            }
+        }
+    }
+}
+
+Define Handle Platforms (warp=true)
+{
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "Lava");
+    Call Get collisions for(physics.pX)(physics.pY) distance(collisionDistance);
+    If (isCollision == "true")
+    {
+        Sound.Play(Glass Breaking);
+        Call Reset Player;
+    }
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "Bounce");
+    Call Get collisions for(physics.pX)(physics.pY) distance(collisionDistance);
+    If ((isCollision == "true") And (platforms.jump == "false"))
+    {
+        Sound.Play(Drum Boing);
+        Call Jump((jumpSpeed * 1.5));
+    }
+    platforms.jump = isCollision;
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "Flip");
+    Call Get Distance Between(0)(0) and(playerVx)(playerVy);
+    If (distanceSquared > collisionDistance)
+    {
+        Call Get collisions for(physics.pX)(physics.pY) distance(distanceSquared);
+    }
+    Else
+    {
+        Call Get collisions for(physics.pX)(physics.pY) distance(collisionDistance);
+    }
+    If ((isCollision == "true") And ((collisionU > 0) And (collisionU < 1)))
+    {
+        Call Get Side of(physics.pX)(physics.pY) along wall(collisionId);
+        If (platforms.gravity == "")
+        {
+            platforms.gravity = vectorSide;
+        }
+        Else
+        {
+            If (Not ((platforms.gravity == vectorSide)))
+            {
+                Sound.Play(Suction Cup);
+                gravityAy = (-1 * gravityAy);
+            }
+            platforms.gravity = vectorSide;
+        }
+    }
+    Else
+    {
+        platforms.gravity = "";
+    }
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "Portal");
+    Call Get collisions for(physics.pX)(physics.pY) distance((collisionDistance * 2));
+    If (isCollision == "true")
+    {
+        If (platforms.portal == "false")
+        {
+            Sound.Play(Squish Pop);
+            Call Find Portal(SegmentArg1[collisionId]);
+            If (Not ((portalId == 0)))
+            {
+                Call Transport to Teleport(portalId) from position("") in teleport(collisionId);
+            }
+        }
+        platforms.portal = "true";
+    }
+    Else
+    {
+        List.DeleteAll(collisionTests);
+        List.Add(collisionTests, "Teleport");
+        Call Get collisions for(physics.pX)(physics.pY) distance((collisionDistance * 1));
+        If (isCollision == "true")
+        {
+            If (platforms.portal == "false")
+            {
+                Sound.Play(Squish Pop);
+                Call Find Portal(SegmentArg1[collisionId]);
+                If (Not ((portalId == 0)))
+                {
+                    Call Transport to Teleport(portalId) from position(collisionU) in teleport(collisionId);
+                }
+            }
+            platforms.portal = "true";
+        }
+        Else
+        {
+            platforms.portal = "false";
+        }
+    }
+    List.DeleteAll(collisionTests);
+    List.Add(collisionTests, "End");
+    Call Get collisions for(physics.pX)(physics.pY) distance((collisionDistance * 2));
+    If ((isCollision == "true") And (platforms.command == "false"))
+    {
+        Sound.Play(Magic Spell);
+        If (SegmentArg1[collisionId] == "")
+        {
+            Level# = ((Level# % List.Length(LevelData)) + 1);
+            Event.Broadcast("OpenLevel");
+        }
+        Else
+        {
+            Level# = List.IndexOf(LevelNames, SegmentArg1[collisionId]);
+            Event.Broadcast("OpenLevel");
+        }
+    }
+    platforms.command = isCollision;
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    collisionDistance = (10 * 10);
+    maxSlope = 8;
+    drag = 0.1;
+    jumpDelay = 4;
+    jumpSpeed = 12;
+    moveSpeed = 1;
+    minV = 0.25;
+    maxV = 16.5;
+    mouseThreshold = 9;
+    List.DeleteAll(collisionTests);
+    Call Reset Automation;
+    Call Reset Player;
+}
+
+Define Jump(string Speed) (warp=true)
+{
+    playerVx = ((playerVx * abs(physics.accSin)) + (((-1 * physics.aXsign) * Speed) * abs(physics.accCos)));
+    playerVy = ((playerVy * abs(physics.accCos)) + (((-1 * physics.aYsign) * Speed) * abs(physics.accSin)));
+}
+
+Define Move Platform(string #) from(string X1)(string Y1)(string X2)(string Y2) along(string pX1)(string pY1)(string pX2)(string pY2) clock(string Clock) (warp=true)
+{
+    automate.centerX = ((X1 + X2) / 2);
+    automate.centerY = ((Y1 + Y2) / 2);
+    automate.moveRatio = (0.5 - (0.5 * cos((Clock * 360))));
+    automate.accRatio = 0;
+    automate.newX = (pX1 + ((pX2 - pX1) * automate.moveRatio));
+    automate.newY = (pY1 + ((pY2 - pY1) * automate.moveRatio));
+    List.ReplaceItem(SegmentX1, #, (X1 + (automate.newX - automate.centerX)));
+    List.ReplaceItem(SegmentY1, #, (Y1 + (automate.newY - automate.centerY)));
+    List.ReplaceItem(SegmentX2, #, (X2 + (automate.newX - automate.centerX)));
+    List.ReplaceItem(SegmentY2, #, (Y2 + (automate.newY - automate.centerY)));
+    If (playerFloorId == #)
+    {
+        restAx = ((pX2 - pX1) * automate.accRatio);
+        restAy = ((pY2 - pY1) * automate.accRatio);
+    }
+}
+
+Define Move Player (warp=true)
+{
+    physics.pX = PlayerX;
+    physics.pY = PlayerY;
+    Call Build Acceleration from(physics.pX)(physics.pY);
+    Call Calculate Acceleration Magnitudes;
+    Call Calculate Vector Signs;
+    playerVx += ((playerAx + restAx) * FrameSpeed);
+    playerVy += ((playerAy + restAy) * FrameSpeed);
+    Call Calculate Vector Signs;
+    If ((physics.grounded > 0) And (InputJ == 1))
+    {
+        physics.grounded = 0;
+        Sound.Play(High Whoosh);
+        Call Jump(jumpSpeed);
+    }
+    physics.pX += ((playerVx * FrameSpeed) * abs(physics.accCos));
+    physics.pY += ((playerVy * FrameSpeed) * abs(physics.accSin));
+    Call Handle collisions("false");
+    If (physics.collisionHandled == "true")
+    {
+        playerVx = (playerVx * abs(physics.accSin));
+        playerVy = (playerVy * abs(physics.accCos));
+        If (((physics.aXsign == physics.vXsign) Or (physics.accCos == 0)) And ((physics.aYsign == physics.vYsign) Or (physics.accSin == 0)))
+        {
+            physics.grounded = jumpDelay;
+            playerFloorId = physics.collisionId;
+        }
+        Else
+        {
+            playerFloorId = "";
+        }
+    }
+    Else
+    {
+        playerFloorId = "";
+        If (physics.grounded > 0)
+        {
+            physics.grounded += -1;
+        }
+    }
+    playerVx += ((moveSpeed * InputI) * (FrameSpeed * abs(physics.accSin)));
+    playerVy += ((-1 * (physics.aYsign * physics.aXsign)) * ((moveSpeed * InputI) * (FrameSpeed * abs(physics.accCos))));
+    physics.pX += ((FrameSpeed * playerVx) * abs(physics.accSin));
+    physics.pY += ((FrameSpeed * playerVy) * abs(physics.accCos));
+    Call Handle collisions("true");
+    If (physics.collisionHandled == "true")
+    {
+        If (Not ((physics.slope < maxSlope)))
+        {
+            physics.pX = physics.priorX;
+            physics.pY = physics.priorY;
+            physics.pX += (-1 * ((FrameSpeed * playerVx) * abs(physics.accSin)));
+            physics.pY += (-1 * ((FrameSpeed * playerVy) * abs(physics.accCos)));
+            playerVx += ((-1.5 * playerVx) * abs(physics.accSin));
+            playerVy += ((-1.5 * playerVy) * abs(physics.accCos));
+        }
+    }
+    playerVx += (((-1 * drag) * (FrameSpeed * playerVx)) * abs(physics.accSin));
+    playerVy += (((-1 * drag) * (FrameSpeed * playerVy)) * abs(physics.accCos));
+    Call Bound Velocity from zero(minV) to max(maxV);
+    PlayerX = physics.pX;
+    PlayerY = physics.pY;
+}
+
+Define Move Point(string #) from(string X)(string Y) along(string pX1)(string pY1)(string pX2)(string pY2) clock(string Clock) (warp=true)
+{
+    automate.newX = (pX1 + ((pX2 - pX1) * automate.moveRatio));
+    automate.newY = (pY1 + ((pY2 - pY1) * automate.moveRatio));
+    List.ReplaceItem(SegmentX1, #, automate.newX);
+    List.ReplaceItem(SegmentY1, #, automate.newY);
+}
+
+Define Move Segment(string #) along(string MoveId) (clock(string Clock) ) (warp=true)
+{
+    If (SegmentX2[#] == "")
+    {
+        Call Move Point(#) from(SegmentX1[#])(SegmentY1[#]) along(SegmentX1[MoveId])(SegmentY1[MoveId])(SegmentX2[MoveId])(SegmentY2[MoveId]) clock(Clock);
+    }
+    Else
+    {
+        Call Move Platform(#) from(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) along(SegmentX1[MoveId])(SegmentY1[MoveId])(SegmentX2[MoveId])(SegmentY2[MoveId]) clock(Clock);
+    }
+}
+
+Define Reset Automation (warp=true)
+{
+    automationClock = 0;
+    automationSpeed = 100;
+}
+
+Define Reset Platforms (warp=true)
+{
+    platforms.jump = "false";
+    platforms.portal = "false";
+    platforms.command = "false";
+    platforms.gravity = "";
+}
+
+Define Reset Player (warp=true)
+{
+    Call Set Starting Position;
+    Call Reset Platforms;
+    playerVx = 0;
+    playerVy = 0;
+    gravityAx = 0;
+    gravityAy = -1;
+    physics.grounded = 0;
+    restAx = 0;
+    restAy = 0;
+    Event.Broadcast("SetCamera");
+}
+
+Define Set Starting Position (warp=true)
+{
+    start.c1 = 0;
+    Repeat Until ((SegmentType[start.c1] == "Start") Or (start.c1 > List.Length(SegmentType)))
+    {
+        start.c1 += 1;
+    }
+    If (SegmentType[start.c1] == "Start")
+    {
+        PlayerX = SegmentX1[start.c1];
+        PlayerY = SegmentY1[start.c1];
+    }
+    Else
+    {
+        PlayerX = 0;
+        PlayerY = 0;
+    }
+}
+
+Define Start Physics (warp=false)
+{
+    PhysicsEnabled = "true";
+    Repeat Until (PhysicsEnabled == "false")
+    {
+        Call Move Player;
+        Call Handle Platforms;
+        Call Automate Level;
+    }
+}
+
+Define Transport to Teleport(string PortalId) from position(string U) in teleport(string MeId) (warp=true)
+{
+    If (SegmentType[PortalId] == "Portal")
+    {
+        PlayerX = SegmentX1[PortalId];
+        PlayerY = SegmentY1[PortalId];
+    }
+    Else
+    {
+        If (SegmentType[PortalId] == "Teleport")
+        {
+            portal.dX = (SegmentX2[PortalId] - SegmentX1[PortalId]);
+            portal.dY = (SegmentY2[PortalId] - SegmentY1[PortalId]);
+            If (U == "")
+            {
+                PlayerX = (SegmentX1[PortalId] + (portal.dX * 0.5));
+                PlayerY = (SegmentY1[PortalId] + (portal.dY * 0.5));
+                Call Calculate Angle of(portal.dX)(portal.dY);
+                portal.s1 = (angle + 90);
+            }
+            Else
+            {
+                PlayerX = (SegmentX1[PortalId] + (portal.dX * U));
+                PlayerY = (SegmentY1[PortalId] + (portal.dY * U));
+                Call Calculate Angle of(portal.dX)(portal.dY);
+                portal.s1 = angle;
+                Call Calculate Angle of((SegmentX2[MeId] - SegmentX1[MeId]))((SegmentY2[MeId] - SegmentY1[MeId]));
+                portal.s1 = (angle - portal.s1);
+            }
+            portal.x = ((playerVx * cos(portal.s1)) - (playerVy * sin(portal.s1)));
+            portal.y = ((playerVx * sin(portal.s1)) + (playerVy * cos(portal.s1)));
+            playerVx = portal.x;
+            playerVy = portal.y;
+        }
+    }
+}
+
+
+//----- Orphaned blocks -----------------------------------------------------------------------------------------------
+
+If List.ContainsItem(SegmentType, "Gravity")
+{
+    gravity.c1 = 0;
+    Repeat (List.Length(SegmentType))
+    {
+        gravity.c1 += 1;
+        If (SegmentType[gravity.c1] == "Gravity")
+        {
+            Call Get distance between wall(gravity.c1) and point(X)(Y);
+            Call Calculate Angle of((X - SegmentX1[gravity.c1]))((Y - SegmentY1[gravity.c1]));
+            If (distanceSquared > (20 * 20))
+            {
+                playerAx += ((4000 / distanceSquared) * sin(angle));
+                playerAy += ((4000 / distanceSquared) * cos(angle));
+            }
+        }
+    }
+}
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.png
+
+
+//----- Sounds --------------------------------------------------------------------------------------------------------
+
+Drum Boing.wav
+Glass Breaking.wav
+High Whoosh.wav
+Magic Spell.wav
+Squish Pop.wav
+Suction Cup.wav

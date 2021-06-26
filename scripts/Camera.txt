@@ -1,0 +1,292 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+bounds.dX = 360
+bounds.dY = 300
+cam.c1 = 16
+camRegion = 17
+inBounds = 1
+move.cX = 280
+move.cY = 250
+move.dX = 0
+move.dY = 15
+move.x = 280
+move.y = 265
+move.zoom = 1.3333333333333
+
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(ResetCamera)
+{
+    Call Reset Camera;
+}
+
+WhenBroadcastReceived(SetCamera)
+{
+    If (CameraEnabled == "true")
+    {
+        Call Start Camera Position;
+    }
+}
+
+WhenBroadcastReceived(StartCamera)
+{
+    Call Start Camera;
+}
+
+WhenBroadcastReceived(StopCamera)
+{
+    CameraEnabled = "false";
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Bound(string X)(string Y) in bounding box(string X1)(string Y1)(string X2)(string Y2) at zoom(string S) (warp=true)
+{
+    Call Get Bounds Size(X1)(Y1)(X2)(Y2);
+    move.x = X;
+    move.y = Y;
+    move.dX = ((bounds.dX - (ResolutionX / (S * UIScaling))) / 2);
+    move.dY = ((bounds.dY - (ResolutionY / (S * UIScaling))) / 2);
+    If (move.dX < 0)
+    {
+        move.dX = 0;
+    }
+    If (move.dY < 0)
+    {
+        move.dY = 0;
+    }
+    move.cX = ((X1 + X2) / 2);
+    move.cY = ((Y1 + Y2) / 2);
+    If ((move.x - move.cX) > move.dX)
+    {
+        move.x = (move.cX + move.dX);
+    }
+    Else
+    {
+        If ((move.cX - move.x) > move.dX)
+        {
+            move.x = (move.cX - move.dX);
+        }
+    }
+    If ((move.y - move.cY) > move.dY)
+    {
+        move.y = (move.cY + move.dY);
+    }
+    Else
+    {
+        If ((move.cY - move.y) > move.dY)
+        {
+            move.y = (move.cY - move.dY);
+        }
+    }
+}
+
+Define Calculate Full Zoom to fit(string X1)(string Y1)(string X2)(string Y2) (warp=true)
+{
+    Call Get Bounds Size(X1)(Y1)(X2)(Y2);
+    If (((ResolutionX / UIScaling) / bounds.dX) < ((ResolutionY / UIScaling) / bounds.dY))
+    {
+        move.zoom = ((ResolutionY / UIScaling) / bounds.dY);
+    }
+    Else
+    {
+        move.zoom = ((ResolutionX / UIScaling) / bounds.dX);
+    }
+}
+
+Define Calculate Minimum Zoom to fit all(string X1)(string Y1)(string X2)(string Y2) (warp=true)
+{
+    Call Get Bounds Size(X1)(Y1)(X2)(Y2);
+    If (((ResolutionX / UIScaling) / bounds.dX) < ((ResolutionY / UIScaling) / bounds.dY))
+    {
+        move.zoom = ((ResolutionX / UIScaling) / bounds.dX);
+    }
+    Else
+    {
+        move.zoom = ((ResolutionY / UIScaling) / bounds.dY);
+    }
+}
+
+Define Find Camera Region for(string X)(string Y) (warp=true)
+{
+    cam.c1 = List.Length(SegmentType);
+    camRegion = 0;
+    Repeat Until ((Not ((camRegion == 0))) Or (cam.c1 < 1))
+    {
+        If (SegmentType[cam.c1] == "Camera")
+        {
+            Call Is(X)(Y) inside bounding box(SegmentX1[cam.c1])(SegmentY1[cam.c1])(SegmentX2[cam.c1])(SegmentY2[cam.c1]) ?;
+            If (inBounds == "true")
+            {
+                camRegion = cam.c1;
+            }
+        }
+        cam.c1 += -1;
+    }
+}
+
+Define Get Bounds Size(string X1)(string Y1)(string X2)(string Y2) (warp=true)
+{
+    bounds.dX = abs((X2 - X1));
+    bounds.dY = abs((Y2 - Y1));
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    Call Reset Camera;
+}
+
+Define Is(string X)(string Y) inside bounding box(string X1)(string Y1)(string X2)(string Y2) ? (warp=true)
+{
+    Call Get Bounds Size(X1)(Y1)(X2)(Y2);
+    inBounds = (((abs((X - X1)) < bounds.dX) And (abs((X - X2)) < bounds.dX)) And ((abs((Y - Y1)) < bounds.dY) And (abs((Y - Y2)) < bounds.dY)));
+}
+
+Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType(string CamType) zoom(string Zoom) (transition(string T) ) (warp=true)
+{
+    If (X1 > X2)
+    {
+        Call Move Camera in Region(X2)(Y1)(X1)(Y2) camType(CamType) zoom(Zoom) (transition(T) );
+    }
+    Else
+    {
+        If (Y1 > Y2)
+        {
+            Call Move Camera in Region(X1)(Y2)(X2)(Y1) camType(CamType) zoom(Zoom) (transition(T) );
+        }
+        Else
+        {
+            If (CamType == "Fixed")
+            {
+                If (Not ((Zoom == "")))
+                {
+                    move.zoom = Zoom;
+                }
+                Else
+                {
+                    Call Calculate Minimum Zoom to fit all(X1)(Y1)(X2)(Y2);
+                }
+                Call Move Camera Towards(((X1 + X2) / 2))(((Y1 + Y2) / 2))(move.zoom) with transition(T);
+            }
+            Else
+            {
+                If (CamType == "Bound")
+                {
+                    If (Not ((Zoom == "")))
+                    {
+                        move.zoom = Zoom;
+                    }
+                    Else
+                    {
+                        Call Calculate Full Zoom to fit(X1)(Y1)(X2)(Y2);
+                    }
+                    Call Bound(PlayerX)(PlayerY) in bounding box(X1)(Y1)(X2)(Y2) at zoom(move.zoom);
+                    Call Move Camera Towards(move.x)(move.y)(move.zoom) with transition(T);
+                }
+                Else
+                {
+                    If (CamType == "View")
+                    {
+                        If (Not ((Zoom == "")))
+                        {
+                            move.zoom = Zoom;
+                        }
+                        Else
+                        {
+                            Call Calculate Full Zoom to fit(X1)(Y1)(X2)(Y2);
+                        }
+                        Call Move Camera Towards(PlayerX)(PlayerY)(move.zoom) with transition(T);
+                    }
+                    Else
+                    {
+                    }
+                }
+            }
+        }
+    }
+}
+
+Define Move Camera in region(string #) transition(string T) (warp=true)
+{
+    If (# == 0)
+    {
+        Call Move Camera Towards(PlayerX)(PlayerY)(1) with transition(T);
+    }
+    Else
+    {
+        Call Move Camera in Region(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) camType(SegmentArg1[#]) zoom(SegmentArg2[#]) (transition(T) );
+    }
+}
+
+Define Move Camera Towards(string X)(string Y)(string S) with transition(string T) (warp=true)
+{
+    If (abs((X - CameraX)) < 0.01)
+    {
+        CameraX = X;
+    }
+    Else
+    {
+        CameraX = (CameraX + (((X - CameraX) / T) * FrameSpeed));
+    }
+    If (abs((Y - CameraY)) < 0.01)
+    {
+        CameraY = Y;
+    }
+    Else
+    {
+        CameraY = (CameraY + (((Y - CameraY) / T) * FrameSpeed));
+    }
+    CameraScale = (CameraScale + (((S - CameraScale) / T) * FrameSpeed));
+}
+
+Define Reset Camera (warp=true)
+{
+    CameraX = 0;
+    CameraY = 0;
+    CameraScale = 1;
+}
+
+Define Start Camera (warp=false)
+{
+    CameraEnabled = "true";
+    Call Start Camera Position;
+    Repeat Until (CameraEnabled == "false")
+    {
+        Call Find Camera Region for(PlayerX)(PlayerY);
+        Call Move Camera in region(camRegion) transition(8);
+    }
+}
+
+Define Start Camera Position (warp=true)
+{
+    Call Find Camera Region for(PlayerX)(PlayerY);
+    Call Move Camera in region(camRegion) transition(1);
+}
+
+
+//----- Orphaned blocks -----------------------------------------------------------------------------------------------
+
+X1
+
+Y1
+
+X2
+
+Y2
+
+S
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg

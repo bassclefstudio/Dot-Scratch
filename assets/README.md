@@ -1,1 +1,0 @@
-All project assets will be extracted to this folder

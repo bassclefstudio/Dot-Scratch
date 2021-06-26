@@ -1,0 +1,1495 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+addZone.h = 216
+addZone.w = 240
+addZone.x = 0
+addZone.y = 0
+createSegment.id = 45
+draw.s1 = 0
+EditorCallbackUI = 0
+incx = 0
+incy = 0
+ind = 0
+lastDragX = 120
+lastDragX2 = 260
+lastDragY = 20
+lastDragY2 = 20
+locale = 0
+locale.s1 = 0
+maxClickDistance = 400
+padding = 0
+penBounds.x = 0
+penBounds.y = 0
+peri = 0
+priorDialogContent = Ondine: Sorting music data...
+priorDialogValue = 1
+priorMx = 0
+priorMy = 0
+priorZone = 0
+priorZoom = 0
+render.c1 = 0
+render.height = 0
+render.width = 0
+render.x = 0
+render.x2 = 0
+render.y = 0
+render.y2 = 0
+td = 0
+tools.c1 = 0
+tools.s1 = 0
+zones.c1 = 4
+zones.s1 = 40
+_bq = 0
+_bq2 = 0
+_i0 = 0
+_i1 = 0
+_i2 = 0
+_i3 = 0
+_i4 = 0
+_i5 = 0
+_i6 = 0
+_i7 = 0
+_i8 = 0
+_i9 = 0
+_width = 0
+_x = 0
+_y = 0
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+dialogs.id = { }
+dialogs.zone = { }
+textSegments = { }
+_chData0 = { }
+_chData1 = { }
+_chData2 = { }
+_chData3 = { }
+_chIndex = { }
+_chWidth = { }
+_fontData = { }
+_fontIndex = { }
+_fontName = { }
+_ww0 = { }
+_ww1 = { }
+_ww2 = { }
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(Click)
+{
+    If ((UIOverlayId == -2) And ((Paused == "true") Or (EditorEnabled == "true")))
+    {
+        Call Exit Overlay;
+    }
+    Else
+    {
+        If (DialogEnabled == "true")
+        {
+            Call Dialog Click(MouseZoneId);
+        }
+        Else
+        {
+            If ((EditorEnabled == "true") And (UIName == "Editor"))
+            {
+                Call Editor Click(MouseZoneId);
+            }
+            Else
+            {
+                If ((Paused == "true") And (UIName == "Pause"))
+                {
+                    Call Pause Click(MouseZoneId);
+                }
+                Else
+                {
+                }
+            }
+        }
+    }
+}
+
+WhenBroadcastReceived(HideDialog)
+{
+    DialogEnabled = "false";
+    Call Exit Overlay;
+    If (UIName == "Dialog")
+    {
+        Event.BroadcastAndWait("StopUI");
+    }
+}
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+    Call Intitialize Editor;
+    Call Initialize UI Logic;
+}
+
+WhenBroadcastReceived(Pause)
+{
+    If (PhysicsEnabled == "true")
+    {
+        Paused = "true";
+        Event.BroadcastAndWait("StopGame");
+        Event.Broadcast("StartPlayerDraw");
+        Event.BroadcastAndWait("ResetMouseZones");
+        Call Initialize UI Logic;
+        DragEnabled = "false";
+        UIName = "Pause";
+        Event.Broadcast("StartUI");
+    }
+}
+
+WhenBroadcastReceived(RunDialog)
+{
+    Repeat Until (DialogEnabled == "false")
+    {
+        priorDialogValue = DialogProgress;
+        priorDialogContent = DialogContent;
+        Wait Until ((Not (((DialogProgress == priorDialogValue) And (DialogContent == priorDialogContent)))) Or (DialogEnabled == "false"));
+        Call Trigger UI Refresh;
+    }
+}
+
+WhenBroadcastReceived(ShowDialog)
+{
+    DialogEnabled = "true";
+    If (UIEnabled == "false")
+    {
+        Event.BroadcastAndWait("ResetMouseZones");
+        Call Initialize UI Logic;
+        DragEnabled = "false";
+        UIName = "Dialog";
+        Event.Broadcast("StartUI");
+    }
+    Else
+    {
+        Call Open (Editor) UI(DialogType)();
+    }
+    Event.Broadcast("RunDialog");
+}
+
+WhenBroadcastReceived(StartEditor)
+{
+    EditorEnabled = "true";
+    Call Intitialize Editor;
+    Event.BroadcastAndWait("ResetMouseZones");
+    Call Initialize UI Logic;
+    Event.BroadcastAndWait("ResetCamera");
+    DragEnabled = "true";
+    UIName = "Editor";
+    Call Create Editor Window Zones;
+    Event.Broadcast("StartUI");
+}
+
+WhenBroadcastReceived(StopEditor)
+{
+    EditorEnabled = "false";
+    Event.Broadcast("StopUI");
+}
+
+WhenBroadcastReceived(StopPause)
+{
+    Paused = "false";
+    Event.BroadcastAndWait("StopUI");
+    Event.Broadcast("StartGame");
+}
+
+WhenBroadcastReceived(UIDrag)
+{
+    If ((EditorEnabled == "true") And (UIName == "Editor"))
+    {
+        Call Editor Drag;
+    }
+}
+
+WhenBroadcastReceived(UIStarted)
+{
+    If (UIName == "Dialog")
+    {
+        Call Create Dialog Window Zones;
+    }
+    Else
+    {
+        If (UIName == "Pause")
+        {
+            Call Create Pause Window Zones;
+        }
+        Else
+        {
+        }
+    }
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Add Zone(string X)(string Y)(string W)(string H) (warp=true)
+{
+    List.Add(MouseZones.X, X);
+    List.Add(MouseZones.Y, Y);
+    List.Add(MouseZones.Width, W);
+    List.Add(MouseZones.Height, H);
+}
+
+Define Add Zone in zone(string #) with alignment(string aX)(string aY) and padding(string pX)(string pY) (optional size(string W)(string H) , isScaled(bool S?) ) (warp=true)
+{
+    If (Not (S?))
+    {
+        Call Add Zone in zone(#) with alignment(aX)(aY) and padding((pX * UIScaling))((pY * UIScaling)) (optional size((W * UIScaling))((H * UIScaling)) , isScaled((Not ())) );
+    }
+    Else
+    {
+        If (# == 0)
+        {
+            If (aX == "L")
+            {
+                addZone.x = ((pX + (W / 2)) - (ResolutionX / 2));
+                addZone.w = W;
+            }
+            Else
+            {
+                If (aX == "R")
+                {
+                    addZone.x = ((ResolutionX / 2) - (pX + (W / 2)));
+                    addZone.w = W;
+                }
+                Else
+                {
+                    If (aX == "S")
+                    {
+                        addZone.x = 0;
+                        addZone.w = (ResolutionX - (pX * 2));
+                    }
+                    Else
+                    {
+                        addZone.x = pX;
+                        addZone.w = W;
+                    }
+                }
+            }
+            If (aY == "B")
+            {
+                addZone.y = ((pY + (H / 2)) - (ResolutionY / 2));
+                addZone.h = H;
+            }
+            Else
+            {
+                If (aY == "T")
+                {
+                    addZone.y = ((ResolutionY / 2) - (pY + (H / 2)));
+                    addZone.h = H;
+                }
+                Else
+                {
+                    If (aY == "S")
+                    {
+                        addZone.y = 0;
+                        addZone.h = (ResolutionY - (pY * 2));
+                    }
+                    Else
+                    {
+                        addZone.y = pY;
+                        addZone.h = H;
+                    }
+                }
+            }
+        }
+        Else
+        {
+            If (aX == "L")
+            {
+                addZone.x = ((MouseZones.X[#] - (MouseZones.Width[#] / 2)) + (pX + (W / 2)));
+                addZone.w = W;
+            }
+            Else
+            {
+                If (aX == "R")
+                {
+                    addZone.x = ((MouseZones.X[#] + (MouseZones.Width[#] / 2)) - (pX + (W / 2)));
+                    addZone.w = W;
+                }
+                Else
+                {
+                    If (aX == "S")
+                    {
+                        addZone.x = MouseZones.X[#];
+                        addZone.w = (MouseZones.Width[#] - (pX * 2));
+                    }
+                    Else
+                    {
+                        addZone.x = (MouseZones.X[#] + pX);
+                        addZone.w = W;
+                    }
+                }
+            }
+            If (aY == "B")
+            {
+                addZone.y = ((MouseZones.Y[#] - (MouseZones.Height[#] / 2)) + (pY + (H / 2)));
+                addZone.h = H;
+            }
+            Else
+            {
+                If (aY == "T")
+                {
+                    addZone.y = ((MouseZones.Y[#] + (MouseZones.Height[#] / 2)) - (pY + (H / 2)));
+                    addZone.h = H;
+                }
+                Else
+                {
+                    If (aY == "S")
+                    {
+                        addZone.y = MouseZones.Y[#];
+                        addZone.h = (MouseZones.Height[#] - (pY * 2));
+                    }
+                    Else
+                    {
+                        addZone.y = (MouseZones.Y[#] + pY);
+                        addZone.h = H;
+                    }
+                }
+            }
+        }
+        Call Add Zone(addZone.x)(addZone.y)(addZone.w)(addZone.h);
+    }
+}
+
+Define Calculate Select Segment (warp=false)
+{
+    Event.BroadcastAndWait("CalculateMouse");
+    If (ClosestDistanceSquared < maxClickDistance)
+    {
+        If (EditorCallbackUI == 0)
+        {
+            If (Not (((EditorSelectedId == ClosestId) And (EditorSelectionType == ClosestCollisionType))))
+            {
+                EditorSelectedId = ClosestId;
+                EditorSelectionType = ClosestCollisionType;
+                Call Trigger Full Refresh;
+            }
+        }
+        Else
+        {
+            Call Exit Overlay;
+            Call Editor Callback(EditorSelectedId)(ClosestId)(EditorCallbackUI);
+            EditorCallbackUI = 0;
+        }
+    }
+    Else
+    {
+        If (Not ((EditorSelectedId == 0)))
+        {
+            EditorSelectedId = 0;
+            Call Trigger Full Refresh;
+        }
+    }
+}
+
+Define Clear Partial Draw (warp=true)
+{
+    EditorDrawX = "";
+    EditorDrawY = "";
+}
+
+Define Create Dialog Window Zones (warp=true)
+{
+    Call Open (Editor) UI(DialogType)();
+}
+
+Define Create Editor Window Zones (warp=true)
+{
+    Call Add Zone in zone(0) with alignment("R")("T") and padding(8)(8) (optional size(100)(30) , isScaled() );
+    Call Add Zone in zone(0) with alignment("C")("T") and padding(8)(8) (optional size(120)(30) , isScaled() );
+    Call Add Zone in zone(0) with alignment("R")("C") and padding(4)(0) (optional size(32)(72) , isScaled() );
+    Call Split zone(3) into(2) vertical sections with separation(16) (isScaled() );
+    Call Add Zone in zone(0) with alignment("S")("B") and padding(8)(8) (optional size("")(20) , isScaled() );
+    Call Add Zone in zone(0) with alignment("R")("B") and padding(8)(40) (optional size(32)(32) , isScaled() );
+    Call Add Zone in zone(0) with alignment("L")("T") and padding(8)(8) (optional size(100)(30) , isScaled() );
+    Call Add Zone in zone(0) with alignment("L")("C") and padding(4)(0) (optional size(32)(72) , isScaled() );
+    Call Split zone(8) into(2) vertical sections with separation(16) (isScaled() );
+    Call Add Zone in zone(0) with alignment("R")("T") and padding(8)(60) (optional size(40)(20) , isScaled() );
+    Call Add Zone in zone(0) with alignment("R")("T") and padding(8)(80) (optional size(40)(20) , isScaled() );
+    Call Add Zone in zone(0) with alignment("L")("B") and padding(8)(34) (optional size(32)(88) , isScaled() );
+    Call Split zone(12) into(2) vertical sections with separation(24) (isScaled() );
+}
+
+Define Create Overlay(string #)(bool Hide Existing) (warp=true)
+{
+    UIOverlayId = #;
+    UIOverlayZone = (List.Length(MouseZones.Height) + 1);
+    List.Add(dialogs.id, UIOverlayId);
+    List.Add(dialogs.zone, UIOverlayZone);
+    If Hide Existing
+    {
+        Call Trigger Full Refresh;
+    }
+    Else
+    {
+        Call Trigger UI Refresh;
+    }
+}
+
+Define Create Pause Window Zones (warp=true)
+{
+    Call Create Overlay(1)();
+    Call Add Zone in zone(0) with alignment("C")("S") and padding(0)(64) (optional size(256)("") , isScaled() );
+    Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+    Call Take(40) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+    Call Split zone((UIOverlayZone + 2)) into(4) vertical sections with separation(16) (isScaled() );
+}
+
+Define Create Segment from(string X1)(string Y1) to(string X2)(string Y2) type(string T) id(string I) args(string A1)(string A2) (warp=true)
+{
+    List.Add(SegmentX1, X1);
+    List.Add(SegmentY1, Y1);
+    List.Add(SegmentX2, X2);
+    List.Add(SegmentY2, Y2);
+    List.Add(SegmentType, T);
+    If (I == "")
+    {
+        createSegment.id = List.Length(SegmentId);
+        Repeat Until (Not (List.ContainsItem(SegmentId, createSegment.id)))
+        {
+            createSegment.id = Operator.Random(1 / List.Length(SegmentType));
+        }
+        List.Add(SegmentId, createSegment.id);
+    }
+    Else
+    {
+        List.Add(SegmentId, I);
+    }
+    List.Add(SegmentArg1, A1);
+    List.Add(SegmentArg2, A2);
+}
+
+Define Create Selection Callback (warp=true)
+{
+    EditorCallbackUI = UIOverlayId;
+    Call Open (Editor) UI(-1)((Not ()));
+}
+
+Define Delete Segment(string #) (warp=true)
+{
+    List.DeleteItem(SegmentX1, #);
+    List.DeleteItem(SegmentY1, #);
+    List.DeleteItem(SegmentX2, #);
+    List.DeleteItem(SegmentY2, #);
+    List.DeleteItem(SegmentType, #);
+    List.DeleteItem(SegmentId, #);
+    List.DeleteItem(SegmentArg1, #);
+    List.DeleteItem(SegmentArg2, #);
+}
+
+Define Dialog Click(string #) (warp=true)
+{
+    If (DialogType == ErrorDialogType)
+    {
+        Event.Broadcast("HideDialog");
+    }
+}
+
+Define Editor Callback(string OldSelection)(string NewSelection)(string #) (warp=true)
+{
+    If (# == 5)
+    {
+        If ((SegmentType[NewSelection] == "Portal") Or (SegmentType[NewSelection] == "Teleport"))
+        {
+            List.ReplaceItem(SegmentArg1, OldSelection, SegmentId[NewSelection]);
+            Call Trigger UI Refresh;
+        }
+    }
+    Else
+    {
+        If (# == 9)
+        {
+            List.ReplaceItem(SegmentArg1, OldSelection, SegmentId[NewSelection]);
+            Call Trigger UI Refresh;
+        }
+        Else
+        {
+        }
+    }
+}
+
+Define Editor Click(string #) (warp=false)
+{
+    If (((# == 0) And (UIOverlayId < 1)) And (EditorSelectedTool == 0))
+    {
+        Call Calculate Select Segment;
+    }
+    Else
+    {
+        If (UIOverlayId == 0)
+        {
+            If ((# == 0) And (Not ((EditorSelectedTool == 0))))
+            {
+                If (((WallTypes[EditorSelectedTool] == "Start") Or (WallTypes[EditorSelectedTool] == "End")) Or ((WallTypes[EditorSelectedTool] == "Portal") Or (WallTypes[EditorSelectedTool] == "Gravity")))
+                {
+                    Call Create Segment from(MouseX)(MouseY) to("")("") type(WallTypes[EditorSelectedTool]) id("") args("")("");
+                    Call Clear Partial Draw;
+                    Call Trigger Full Refresh;
+                }
+                Else
+                {
+                    If (Not ((EditorDrawY == "")))
+                    {
+                        Call Create Segment from(EditorDrawX)(EditorDrawY) to(MouseX)(MouseY) type(WallTypes[EditorSelectedTool]) id("") args("")("");
+                        Call Clear Partial Draw;
+                        Call Trigger Full Refresh;
+                    }
+                    Else
+                    {
+                        EditorDrawX = MouseX;
+                        EditorDrawY = MouseY;
+                        Call Trigger Full Refresh;
+                    }
+                }
+            }
+            Else
+            {
+                If (# == 3)
+                {
+                    If (CameraScale < 2.5)
+                    {
+                        CameraScale += 0.25;
+                        Call Trigger Full Refresh;
+                    }
+                }
+                Else
+                {
+                    If (# == 4)
+                    {
+                        If (CameraScale > 0.25)
+                        {
+                            CameraScale += -0.25;
+                            Call Trigger Full Refresh;
+                        }
+                    }
+                    Else
+                    {
+                        If (# == 6)
+                        {
+                            If (Not ((EditorSelectedId == 0)))
+                            {
+                                Call Delete Segment(EditorSelectedId);
+                            }
+                            EditorSelectedId = 0;
+                            Call Trigger Full Refresh;
+                        }
+                        Else
+                        {
+                            If (# == 8)
+                            {
+                                If ((Not ((EditorSelectedId == 0))) And (EditorSelectedId < List.Length(SegmentType)))
+                                {
+                                    Call Swap segments(EditorSelectedId) and((EditorSelectedId + 1));
+                                    Call Trigger Full Refresh;
+                                }
+                            }
+                            Else
+                            {
+                                If (# == 9)
+                                {
+                                    If (EditorSelectedId > 1)
+                                    {
+                                        Call Swap segments((EditorSelectedId - 1)) and(EditorSelectedId);
+                                        Call Trigger Full Refresh;
+                                    }
+                                }
+                                Else
+                                {
+                                    If (# == 12)
+                                    {
+                                        If (SegmentType[EditorSelectedId] == "Camera")
+                                        {
+                                            Call Open (Editor) UI(4)();
+                                        }
+                                        Else
+                                        {
+                                            If ((SegmentType[EditorSelectedId] == "Portal") Or (SegmentType[EditorSelectedId] == "Teleport"))
+                                            {
+                                                Call Open (Editor) UI(5)();
+                                            }
+                                            Else
+                                            {
+                                                If (SegmentType[EditorSelectedId] == "End")
+                                                {
+                                                    Call Open (Editor) UI(6)();
+                                                }
+                                                Else
+                                                {
+                                                    If (SegmentType[EditorSelectedId] == "UI")
+                                                    {
+                                                        Call Open (Editor) UI(7)();
+                                                    }
+                                                    Else
+                                                    {
+                                                        If (SegmentType[EditorSelectedId] == "Move")
+                                                        {
+                                                            Call Open (Editor) UI(9)();
+                                                        }
+                                                        Else
+                                                        {
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Else
+                                    {
+                                        If (# == 13)
+                                        {
+                                            Call Open (Editor) UI(8)();
+                                        }
+                                        Else
+                                        {
+                                            EditorSelectedId = 0;
+                                            Call Clear Partial Draw;
+                                            If (# == 1)
+                                            {
+                                                Call Open (Editor) UI(1)();
+                                            }
+                                            Else
+                                            {
+                                                If (# == 2)
+                                                {
+                                                    Event.BroadcastAndWait("SaveLevel");
+                                                    Call Open (Editor) UI(2)();
+                                                }
+                                                Else
+                                                {
+                                                    If (# == 5)
+                                                    {
+                                                        Call Open (Editor) UI(3)();
+                                                    }
+                                                    Else
+                                                    {
+                                                        If (# == 7)
+                                                        {
+                                                            Event.BroadcastAndWait("SaveLevel");
+                                                            Event.Broadcast("StopUI");
+                                                            Event.BroadcastAndWait("RestartLevel");
+                                                            Event.Broadcast("StartGame");
+                                                        }
+                                                        Else
+                                                        {
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Else
+        {
+            If (UIOverlayId == 1)
+            {
+                If (# == (UIOverlayZone + 8))
+                {
+                    Call Exit Overlay;
+                }
+                Else
+                {
+                    If (# == (UIOverlayZone + 3))
+                    {
+                        Sensing.Ask("Open File (.dot4):");
+                        Game File (.dot4) = Sensing.Answer();
+                        Event.BroadcastAndWait("OpenFile");
+                        Level# = 1;
+                        Event.BroadcastAndWait("OpenLevel");
+                        Call Exit Overlay;
+                    }
+                    Else
+                    {
+                        If (# == (UIOverlayZone + 4))
+                        {
+                            Sensing.Ask("Open File (.dot3):");
+                            Legacy File (.dot3) = Sensing.Answer();
+                            Event.BroadcastAndWait("OpenLegacy");
+                            Level# = 1;
+                            Event.BroadcastAndWait("OpenLevel");
+                            Call Exit Overlay;
+                        }
+                        Else
+                        {
+                            If (# == (UIOverlayZone + 5))
+                            {
+                                Event.BroadcastAndWait("SaveLevel");
+                                Event.BroadcastAndWait("SaveFile");
+                                Event.Broadcast("CopyFile");
+                                Call Exit Overlay;
+                            }
+                            Else
+                            {
+                                If (# == (UIOverlayZone + 6))
+                                {
+                                    Sensing.Ask("Open File (.dot4):");
+                                    Game File (.dot4) = Sensing.Answer();
+                                    Event.BroadcastAndWait("AppendFile");
+                                    Call Exit Overlay;
+                                }
+                                Else
+                                {
+                                    If (# == (UIOverlayZone + 7))
+                                    {
+                                        Event.BroadcastAndWait("SaveLevel");
+                                        Event.Broadcast("CopyLevel");
+                                        Call Exit Overlay;
+                                    }
+                                    Else
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Else
+            {
+                If (UIOverlayId == 2)
+                {
+                    If (# == (UIOverlayZone + 2))
+                    {
+                        If (Level# > 1)
+                        {
+                            Level# += -1;
+                            Event.BroadcastAndWait("OpenLevel");
+                            Call Trigger Full Refresh;
+                        }
+                    }
+                    Else
+                    {
+                        If (# == (UIOverlayZone + 3))
+                        {
+                            If (Level# < List.Length(LevelNames))
+                            {
+                                Level# += 1;
+                                Event.BroadcastAndWait("OpenLevel");
+                                Call Trigger Full Refresh;
+                            }
+                        }
+                        Else
+                        {
+                            If (# == (UIOverlayZone + 8))
+                            {
+                                Call Exit Overlay;
+                            }
+                            Else
+                            {
+                                If (# == (UIOverlayZone + 7))
+                                {
+                                    Event.BroadcastAndWait("DeleteLevel");
+                                    Call Trigger Full Refresh;
+                                }
+                                Else
+                                {
+                                    If (# == (UIOverlayZone + 6))
+                                    {
+                                        Sensing.Ask("Level Name:");
+                                        LevelName = Sensing.Answer();
+                                        Event.BroadcastAndWait("AddLevel");
+                                        Call Trigger Full Refresh;
+                                    }
+                                    Else
+                                    {
+                                        If (# == (UIOverlayZone + 5))
+                                        {
+                                            Sensing.Ask("Level Name:");
+                                            LevelName = Sensing.Answer();
+                                            Event.BroadcastAndWait("InsertLevel");
+                                            Call Trigger Full Refresh;
+                                        }
+                                        Else
+                                        {
+                                            If (# == (UIOverlayZone + 4))
+                                            {
+                                                Sensing.Ask("New Level Name:");
+                                                List.ReplaceItem(LevelNames, Level#, Sensing.Answer());
+                                                Call Trigger Full Refresh;
+                                            }
+                                            Else
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Else
+                {
+                    If (UIOverlayId == 3)
+                    {
+                        If ((# > UIOverlayZone) And (# < (UIOverlayZone + 6)))
+                        {
+                            EditorSelectedTool = (((EditorToolView + (# - UIOverlayZone)) - 1) % EditorMaxTools);
+                            Call Exit Overlay;
+                        }
+                        Else
+                        {
+                            If (# == (UIOverlayZone + 6))
+                            {
+                                EditorToolView = ((EditorToolView - 5) % EditorMaxTools);
+                                Call Trigger UI Refresh;
+                            }
+                            Else
+                            {
+                                If (# == (UIOverlayZone + 7))
+                                {
+                                    EditorToolView = ((EditorToolView + 5) % EditorMaxTools);
+                                    Call Trigger UI Refresh;
+                                }
+                                Else
+                                {
+                                }
+                            }
+                        }
+                    }
+                    Else
+                    {
+                        If (UIOverlayId == 4)
+                        {
+                            If (# == (UIOverlayZone + 4))
+                            {
+                                List.ReplaceItem(SegmentArg1, EditorSelectedId, "Fixed");
+                                Call Trigger UI Refresh;
+                            }
+                            Else
+                            {
+                                If (# == (UIOverlayZone + 5))
+                                {
+                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, "Bound");
+                                    Call Trigger UI Refresh;
+                                }
+                                Else
+                                {
+                                    If (# == (UIOverlayZone + 6))
+                                    {
+                                        List.ReplaceItem(SegmentArg1, EditorSelectedId, "View");
+                                        Call Trigger UI Refresh;
+                                    }
+                                    Else
+                                    {
+                                        If (# == (UIOverlayZone + 9))
+                                        {
+                                            Sensing.Ask("Enter Zoom Level:");
+                                            If ((Sensing.Answer() + 0) == Sensing.Answer())
+                                            {
+                                                List.ReplaceItem(SegmentArg2, EditorSelectedId, Sensing.Answer());
+                                            }
+                                            Else
+                                            {
+                                                List.ReplaceItem(SegmentArg2, EditorSelectedId, "");
+                                            }
+                                            Call Trigger UI Refresh;
+                                        }
+                                        Else
+                                        {
+                                            If (# == (UIOverlayZone + 10))
+                                            {
+                                                Call Exit Overlay;
+                                            }
+                                            Else
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Else
+                        {
+                            If (UIOverlayId == 5)
+                            {
+                                If (# == (UIOverlayZone + 4))
+                                {
+                                    Sensing.Ask("Rename:");
+                                    If (Not (List.ContainsItem(SegmentId, Sensing.Answer())))
+                                    {
+                                        List.ReplaceItem(SegmentId, EditorSelectedId, Sensing.Answer());
+                                    }
+                                    Call Trigger UI Refresh;
+                                }
+                                Else
+                                {
+                                    If (# == (UIOverlayZone + 7))
+                                    {
+                                        Call Create Selection Callback;
+                                    }
+                                    Else
+                                    {
+                                        If (# == (UIOverlayZone + 8))
+                                        {
+                                            Call Exit Overlay;
+                                        }
+                                        Else
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                            Else
+                            {
+                                If (UIOverlayId == 6)
+                                {
+                                    If (# == (UIOverlayZone + 4))
+                                    {
+                                        Sensing.Ask("Level # or Name:");
+                                        If (Sensing.Answer() == "")
+                                        {
+                                            List.ReplaceItem(SegmentArg1, EditorSelectedId, "");
+                                            Call Trigger UI Refresh;
+                                        }
+                                        Else
+                                        {
+                                            If ((Sensing.Answer() * 1) == Sensing.Answer())
+                                            {
+                                                If ((Sensing.Answer() > 0) And (Not ((Sensing.Answer() > List.Length(LevelNames)))))
+                                                {
+                                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, LevelNames[Sensing.Answer()]);
+                                                    Call Trigger UI Refresh;
+                                                }
+                                            }
+                                            Else
+                                            {
+                                                If List.ContainsItem(LevelNames, Sensing.Answer())
+                                                {
+                                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, Sensing.Answer());
+                                                    Call Trigger UI Refresh;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Else
+                                    {
+                                        If (# == (UIOverlayZone + 5))
+                                        {
+                                            Call Exit Overlay;
+                                        }
+                                        Else
+                                        {
+                                        }
+                                    }
+                                }
+                                Else
+                                {
+                                    If (UIOverlayId == 7)
+                                    {
+                                        If (# == (UIOverlayZone + 3))
+                                        {
+                                            Sensing.Ask("Insert Text:");
+                                            List.ReplaceItem(SegmentArg1, EditorSelectedId, Sensing.Answer());
+                                            Call Trigger UI Refresh;
+                                        }
+                                        Else
+                                        {
+                                            If (# == (UIOverlayZone + 4))
+                                            {
+                                                Sensing.Ask("Font Size:");
+                                                If ((Sensing.Answer() * 1) == Sensing.Answer())
+                                                {
+                                                    List.ReplaceItem(SegmentArg2, EditorSelectedId, Sensing.Answer());
+                                                }
+                                                Else
+                                                {
+                                                    List.ReplaceItem(SegmentArg2, EditorSelectedId, "");
+                                                }
+                                                Call Trigger UI Refresh;
+                                            }
+                                            Else
+                                            {
+                                                If (# == (UIOverlayZone + 5))
+                                                {
+                                                    Call Exit Overlay;
+                                                }
+                                                Else
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Else
+                                    {
+                                        If (UIOverlayId == 8)
+                                        {
+                                            If (# == (UIOverlayZone + 3))
+                                            {
+                                                Sensing.Ask("Rename:");
+                                                If (Not (List.ContainsItem(SegmentId, Sensing.Answer())))
+                                                {
+                                                    List.ReplaceItem(SegmentId, EditorSelectedId, Sensing.Answer());
+                                                }
+                                                Call Trigger UI Refresh;
+                                            }
+                                            Else
+                                            {
+                                                If (# == (UIOverlayZone + 4))
+                                                {
+                                                    Call Exit Overlay;
+                                                }
+                                                Else
+                                                {
+                                                }
+                                            }
+                                        }
+                                        Else
+                                        {
+                                            If (UIOverlayId == 9)
+                                            {
+                                                If (# == (UIOverlayZone + 4))
+                                                {
+                                                    Call Create Selection Callback;
+                                                }
+                                                Else
+                                                {
+                                                    If (# == (UIOverlayZone + 5))
+                                                    {
+                                                        Call Exit Overlay;
+                                                    }
+                                                    Else
+                                                    {
+                                                    }
+                                                }
+                                            }
+                                            Else
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Define Editor Drag (warp=false)
+{
+    Call Calculate Select Segment;
+    If ((EditorSelectedId == 0) Or (UIOverlayId == -1))
+    {
+        lastDragX = CameraX;
+        lastDragY = CameraY;
+        Repeat Until (IsDragging == "false")
+        {
+            CameraX = (lastDragX - DragX);
+            CameraY = (lastDragY - DragY);
+        }
+        Call Trigger Full Refresh;
+    }
+    Else
+    {
+        If (UIOverlayId == 0)
+        {
+            lastDragX = SegmentX1[EditorSelectedId];
+            lastDragY = SegmentY1[EditorSelectedId];
+            lastDragX2 = SegmentX2[EditorSelectedId];
+            lastDragY2 = SegmentY2[EditorSelectedId];
+            Repeat Until (IsDragging == "false")
+            {
+                If ((EditorSelectionType == 0) Or (EditorSelectionType == 1))
+                {
+                    List.ReplaceItem(SegmentX1, EditorSelectedId, (lastDragX + (Operator.Round((DragX / 10)) * 10)));
+                    List.ReplaceItem(SegmentY1, EditorSelectedId, (lastDragY + (Operator.Round((DragY / 10)) * 10)));
+                }
+                If ((EditorSelectionType == 0) Or (EditorSelectionType == 2))
+                {
+                    List.ReplaceItem(SegmentX2, EditorSelectedId, (lastDragX2 + (Operator.Round((DragX / 10)) * 10)));
+                    List.ReplaceItem(SegmentY2, EditorSelectedId, (lastDragY2 + (Operator.Round((DragY / 10)) * 10)));
+                }
+            }
+            Call Trigger Full Refresh;
+        }
+    }
+}
+
+Define Exit Overlay (warp=true)
+{
+    Call Remove zones through(UIOverlayZone);
+    List.DeleteItem(dialogs.id, List.Length(dialogs.id));
+    List.DeleteItem(dialogs.zone, List.Length(dialogs.zone));
+    If (List.Length(dialogs.id) == 0)
+    {
+        UIOverlayId = 0;
+    }
+    Else
+    {
+        UIOverlayId = dialogs.id[List.Length(dialogs.id)];
+        UIOverlayZone = dialogs.zone[List.Length(dialogs.zone)];
+    }
+    Call Trigger Full Refresh;
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+}
+
+Define Initialize UI Logic (warp=true)
+{
+    List.DeleteAll(dialogs.id);
+    List.DeleteAll(dialogs.zone);
+    ErrorDialogType = -2;
+    ProgressDialogType = -3;
+}
+
+Define Insert Zone(string X)(string Y)(string W)(string H) at(string #) (warp=true)
+{
+    List.InsertItem(MouseZones.X, #, X);
+    List.InsertItem(MouseZones.Y, #, Y);
+    List.InsertItem(MouseZones.Width, #, W);
+    List.InsertItem(MouseZones.Height, #, H);
+}
+
+Define Intitialize Editor (warp=true)
+{
+    EditorMaxTools = 15;
+    EditorSelectedTool = 0;
+    EditorToolView = 0;
+    EditorSelectedId = 0;
+    maxClickDistance = 400;
+    EditorCallbackUI = 0;
+    Call Clear Partial Draw;
+}
+
+Define Open (Editor) UI(string #)(bool Hide Existing) (warp=true)
+{
+    Call Create Overlay(#)(Hide Existing);
+    If (# == 1)
+    {
+        Call Add Zone in zone(0) with alignment("S")("S") and padding(32)(32) (optional size("")("") , isScaled() );
+        Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+        Call Take(30) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+        Call Take(96) vertically from zone((UIOverlayZone + 2)) with separation(16) (isScaled() );
+        Call Take(64) vertically from zone((UIOverlayZone + 3)) with separation(16) (isScaled() );
+        Call Split zone((UIOverlayZone + 3)) into(3) horizontal sections with separation(16) (isScaled() );
+        Call Split zone((UIOverlayZone + 3)) into(2) vertical sections with separation(16) (isScaled() );
+        Call Split zone((UIOverlayZone + 6)) into(2) vertical sections with separation(16) (isScaled() );
+    }
+    Else
+    {
+        If (# == 2)
+        {
+            Call Add Zone in zone(0) with alignment("C")("S") and padding(16)(16) (optional size(240)("") , isScaled() );
+            Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+            Call Take(60) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+            Call Take(30) vertically from zone((UIOverlayZone + 2)) with separation(16) (isScaled() );
+            Call Split zone((UIOverlayZone + 2)) into(2) horizontal sections with separation(16) (isScaled() );
+            Call Take(30) vertically from zone((UIOverlayZone + 4)) with separation(16) (isScaled() );
+            Call Take(30) vertically from zone((UIOverlayZone + 5)) with separation(16) (isScaled() );
+            Call Split zone((UIOverlayZone + 5)) into(2) horizontal sections with separation(16) (isScaled() );
+            Call Take(30) vertically from zone((UIOverlayZone + 7)) with separation(16) (isScaled() );
+        }
+        Else
+        {
+            If (# == 3)
+            {
+                Call Add Zone in zone(0) with alignment("S")("B") and padding(8)(8) (optional size("")(80) , isScaled() );
+                Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(32)(8) (optional size("")("") , isScaled() );
+                Call Split zone((UIOverlayZone + 1)) into(5) horizontal sections with separation(16) (isScaled() );
+                Call Add Zone in zone(UIOverlayZone) with alignment("L")("S") and padding(0)(0) (optional size(20)("") , isScaled() );
+                Call Add Zone in zone(UIOverlayZone) with alignment("R")("S") and padding(0)(0) (optional size(20)("") , isScaled() );
+            }
+            Else
+            {
+                If (# == 4)
+                {
+                    Call Add Zone in zone(0) with alignment("S")("S") and padding(64)(64) (optional size("")("") , isScaled() );
+                    Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                    Call Take(30) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                    Call Split zone((UIOverlayZone + 2)) into(3) vertical sections with separation(16) (isScaled() );
+                    Call Take(100) horizontally from zone((UIOverlayZone + 2)) with separation(16) (isScaled?() );
+                    Call Split zone((UIOverlayZone + 2)) into(2) vertical sections with separation(0) (isScaled() );
+                    Call Split zone((UIOverlayZone + 4)) into(3) horizontal sections with separation(16) (isScaled() );
+                    Call Split zone((UIOverlayZone + 7)) into(3) horizontal sections with separation(16) (isScaled() );
+                }
+                Else
+                {
+                    If (# == 5)
+                    {
+                        Call Add Zone in zone(0) with alignment("S")("S") and padding(64)(64) (optional size("")("") , isScaled() );
+                        Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                        Call Take(30) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                        Call Split zone((UIOverlayZone + 2)) into(3) vertical sections with separation(16) (isScaled() );
+                        Call Split zone((UIOverlayZone + 2)) into(3) horizontal sections with separation(16) (isScaled() );
+                        Call Split zone((UIOverlayZone + 5)) into(3) horizontal sections with separation(16) (isScaled() );
+                    }
+                    Else
+                    {
+                        If (# == 6)
+                        {
+                            Call Add Zone in zone(0) with alignment("S")("S") and padding(64)(64) (optional size("")("") , isScaled() );
+                            Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                            Call Take(30) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                            Call Split zone((UIOverlayZone + 2)) into(2) vertical sections with separation(16) (isScaled() );
+                            Call Split zone((UIOverlayZone + 2)) into(2) horizontal sections with separation(16) (isScaled() );
+                            Call Split zone((UIOverlayZone + 4)) into(2) vertical sections with separation(16) (isScaled() );
+                        }
+                        Else
+                        {
+                            If (# == 7)
+                            {
+                                Call Add Zone in zone(0) with alignment("S")("S") and padding(64)(64) (optional size("")("") , isScaled() );
+                                Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                                Call Take(30) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                                Call Take(48) vertically from zone((UIOverlayZone + 2)) with separation(16) (isScaled() );
+                                Call Split zone((UIOverlayZone + 3)) into(3) vertical sections with separation(16) (isScaled() );
+                            }
+                            Else
+                            {
+                                If (# == 8)
+                                {
+                                    Call Add Zone in zone(0) with alignment("C")("C") and padding("")("") (optional size(256)(128) , isScaled() );
+                                    Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                                    Call Take(24) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                                    Call Split zone((UIOverlayZone + 2)) into(2) horizontal sections with separation(16) (isScaled() );
+                                    Call Split zone((UIOverlayZone + 3)) into(2) vertical sections with separation(16) (isScaled() );
+                                }
+                                Else
+                                {
+                                    If (# == 9)
+                                    {
+                                        Call Add Zone in zone(0) with alignment("S")("S") and padding(64)(72) (optional size("")("") , isScaled() );
+                                        Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                                        Call Take(48) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                                        Call Split zone((UIOverlayZone + 2)) into(2) vertical sections with separation(16) (isScaled() );
+                                        Call Split zone((UIOverlayZone + 2)) into(3) horizontal sections with separation(16) (isScaled() );
+                                    }
+                                    Else
+                                    {
+                                        If (# == -3)
+                                        {
+                                            Call Add Zone in zone(0) with alignment("C")("C") and padding("")("") (optional size(256)(96) , isScaled() );
+                                            Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                                            Call Take(64) vertically from zone((UIOverlayZone + 1)) with separation(8) (isScaled() );
+                                        }
+                                        Else
+                                        {
+                                            If (# == -2)
+                                            {
+                                                Call Add Zone in zone(0) with alignment("C")("C") and padding("")("") (optional size(256)(128) , isScaled() );
+                                                Call Add Zone in zone(UIOverlayZone) with alignment("S")("S") and padding(8)(8) (optional size("")("") , isScaled() );
+                                                Call Take(32) vertically from zone((UIOverlayZone + 1)) with separation(16) (isScaled() );
+                                            }
+                                            Else
+                                            {
+                                                If (# == -1)
+                                                {
+                                                    Call Add Zone in zone(0) with alignment("C")("T") and padding(0)(0) (optional size(100)(40) , isScaled() );
+                                                }
+                                                Else
+                                                {
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Define Pause Click(string #) (warp=false)
+{
+    If (UIOverlayId == 1)
+    {
+        If (# == (UIOverlayZone + 2))
+        {
+            Event.Broadcast("StopPause");
+        }
+        Else
+        {
+            If (# == (UIOverlayZone + 3))
+            {
+                Event.BroadcastAndWait("RestartLevel");
+                Event.Broadcast("StopPause");
+            }
+            Else
+            {
+                If (# == (UIOverlayZone + 4))
+                {
+                    Paused = "false";
+                    Event.BroadcastAndWait("StopGame");
+                    Event.BroadcastAndWait("StopUI");
+                    Event.Broadcast("StartEditor");
+                }
+                Else
+                {
+                    If (# == (UIOverlayZone + 5))
+                    {
+                        Level# = 1;
+                        Event.BroadcastAndWait("OpenLevel");
+                        Event.Broadcast("StopPause");
+                    }
+                    Else
+                    {
+                    }
+                }
+            }
+        }
+    }
+    Else
+    {
+    }
+}
+
+Define Remove Zone(string #) (warp=true)
+{
+    List.DeleteItem(MouseZones.X, #);
+    List.DeleteItem(MouseZones.Y, #);
+    List.DeleteItem(MouseZones.Width, #);
+    List.DeleteItem(MouseZones.Height, #);
+}
+
+Define Remove zones through(string #) (warp=true)
+{
+    Repeat Until (List.Length(MouseZones.Height) < #)
+    {
+        Call Remove Zone(#);
+    }
+}
+
+Define Split zone(string #) into(string X) horizontal sections with separation(string S) (isScaled(bool S?) ) (warp=true)
+{
+    If (Not (S?))
+    {
+        Call Split zone(#) into(X) horizontal sections with separation((S * UIScaling)) (isScaled((Not ())) );
+    }
+    Else
+    {
+        If (X > 1)
+        {
+            zones.c1 = 0;
+            zones.s1 = (MouseZones.Width[#] / X);
+            Repeat (X)
+            {
+                Call Insert Zone(((MouseZones.X[#] + (MouseZones.Width[#] / 2)) - (zones.s1 * (zones.c1 + 0.5))))(MouseZones.Y[#])((zones.s1 - (S / 2)))(MouseZones.Height[#]) at((# + 1));
+                zones.c1 += 1;
+            }
+        }
+        Call Remove Zone(#);
+    }
+}
+
+Define Split zone(string #) into(string Y) vertical sections with separation(string S) (isScaled(bool S?) ) (warp=true)
+{
+    If (Not (S?))
+    {
+        Call Split zone(#) into(Y) vertical sections with separation((S * UIScaling)) (isScaled((Not ())) );
+    }
+    Else
+    {
+        If (Y > 1)
+        {
+            zones.c1 = 0;
+            zones.s1 = (MouseZones.Height[#] / Y);
+            Repeat (Y)
+            {
+                Call Insert Zone(MouseZones.X[#])(((MouseZones.Y[#] - (MouseZones.Height[#] / 2)) + (zones.s1 * (zones.c1 + 0.5))))(MouseZones.Width[#])((zones.s1 - (S / 2))) at((# + 1));
+                zones.c1 += 1;
+            }
+        }
+        Call Remove Zone(#);
+    }
+}
+
+Define Swap segments(string #1) and(string #2) (warp=true)
+{
+    List.InsertItem(SegmentX1, #1, SegmentX1[#2]);
+    List.InsertItem(SegmentY1, #1, SegmentY1[#2]);
+    List.InsertItem(SegmentX2, #1, SegmentX2[#2]);
+    List.InsertItem(SegmentY2, #1, SegmentY2[#2]);
+    List.InsertItem(SegmentType, #1, SegmentType[#2]);
+    List.InsertItem(SegmentId, #1, SegmentId[#2]);
+    List.InsertItem(SegmentArg1, #1, SegmentArg1[#2]);
+    List.ReplaceItem(SegmentX1, (#2 + 1), SegmentX1[(#1 + 1)]);
+    List.ReplaceItem(SegmentY1, (#2 + 1), SegmentY1[(#1 + 1)]);
+    List.ReplaceItem(SegmentX2, (#2 + 1), SegmentX2[(#1 + 1)]);
+    List.ReplaceItem(SegmentY2, (#2 + 1), SegmentY2[(#1 + 1)]);
+    List.ReplaceItem(SegmentType, (#2 + 1), SegmentType[(#1 + 1)]);
+    List.ReplaceItem(SegmentId, (#2 + 1), SegmentId[(#1 + 1)]);
+    List.ReplaceItem(SegmentArg1, (#2 + 1), SegmentArg1[(#1 + 1)]);
+    Call Delete Segment((#1 + 1));
+    If (EditorSelectedId == #1)
+    {
+        EditorSelectedId = #2;
+    }
+    Else
+    {
+        If (EditorSelectedId == #2)
+        {
+            EditorSelectedId = #1;
+        }
+    }
+}
+
+Define Take(string X) horizontally from zone(string #) with separation(string S) (isScaled?(bool S?) ) (warp=true)
+{
+    If (Not (S?))
+    {
+        Call Take((X * UIScaling)) horizontally from zone(#) with separation((S * UIScaling)) (isScaled?((Not ())) );
+    }
+    Else
+    {
+        Call Insert Zone(((MouseZones.X[#] - (MouseZones.Width[#] / 2)) + (X / 2)))(MouseZones.Y[#])(X)(MouseZones.Height[#]) at(#);
+        List.ReplaceItem(MouseZones.X, (# + 1), (MouseZones.X[(# + 1)] + ((X + S) / 2)));
+        List.ReplaceItem(MouseZones.Width, (# + 1), (MouseZones.Width[(# + 1)] - (X + S)));
+    }
+}
+
+Define Take(string Y) vertically from zone(string #) with separation(string S) (isScaled(bool S?) ) (warp=true)
+{
+    If (Not (S?))
+    {
+        Call Take((Y * UIScaling)) vertically from zone(#) with separation((S * UIScaling)) (isScaled((Not ())) );
+    }
+    Else
+    {
+        Call Insert Zone(MouseZones.X[#])(((MouseZones.Y[#] + (MouseZones.Height[#] / 2)) - (Y / 2)))(MouseZones.Width[#])(Y) at(#);
+        List.ReplaceItem(MouseZones.Y, (# + 1), (MouseZones.Y[(# + 1)] - ((Y + S) / 2)));
+        List.ReplaceItem(MouseZones.Height, (# + 1), (MouseZones.Height[(# + 1)] - (Y + S)));
+    }
+}
+
+Define Trigger Full Refresh (warp=true)
+{
+    UIRefreshTrigger = 2;
+    Event.Broadcast("LevelChanged");
+}
+
+Define Trigger UI Refresh (warp=true)
+{
+    UIRefreshTrigger = 1;
+}
+
+
+//----- Orphaned blocks -----------------------------------------------------------------------------------------------
+
+Scale?
+
+#
+
+Hide?
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg

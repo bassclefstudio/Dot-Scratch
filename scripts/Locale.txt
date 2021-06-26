@@ -1,0 +1,92 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+hoverText.zone = 7
+myLanguage = English
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+supportedLanguages = { 
+    English
+    German
+}
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(AddTextKey)
+{
+    Call Add String(TextKey);
+}
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(ShowHoverText)
+{
+    hoverText.zone = MouseZoneId;
+    Looks.Say(Translate.GetTranslation(myLanguage, LocaleHoverText));
+    Looks.Show();
+    Repeat Until (Not ((MouseZoneId == hoverText.zone)))
+    {
+        Motion.GoTo(_mouse_);
+    }
+    LocaleHoverText = "";
+    Looks.Hide();
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Add Pair(string Key) (warp=true)
+{
+    List.Add(StringResources, Key);
+    List.Add(StringTranslations, Key);
+}
+
+Define Add String(string Key) (warp=false)
+{
+    Call Add Pair(Key);
+    If ((Translate.GetViewerLanguage() == "English") Or ((LanguageSupported == "false") Or is compiled?))
+    {
+        Event.Broadcast("TranslationComplete");
+    }
+    Else
+    {
+        Call Translate(List.IndexOf(StringResources, Key));
+        Event.Broadcast("TranslationComplete");
+    }
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    List.DeleteAll(StringResources);
+    List.DeleteAll(StringTranslations);
+    List.DeleteAll(supportedLanguages);
+    List.Add(supportedLanguages, "English");
+    List.Add(supportedLanguages, "German");
+    myLanguage = Translate.GetTranslation(en, Translate.GetViewerLanguage());
+    LanguageSupported = List.ContainsItem(supportedLanguages, myLanguage);
+    LocaleHoverText = "";
+}
+
+Define Translate(string #) (warp=false)
+{
+    List.ReplaceItem(StringTranslations, #, Translate.GetTranslation(myLanguage, StringResources[#]));
+}
+
+
+//----- Orphaned blocks -----------------------------------------------------------------------------------------------
+
+lt
+
+lt
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg

@@ -1,0 +1,266 @@
+//----- Variables -----------------------------------------------------------------------------------------------------
+
+click.c1 = 7
+click.s1 = 7
+click.s2 = 0
+dragThreshold = 10
+hold.s1 = 0
+holdTime = 16
+inputGridSize = 10
+lastMouseX = -40
+lastMouseY = -106
+touchRegionSize = 0.1
+
+
+//----- Lists ---------------------------------------------------------------------------------------------------------
+
+_chData0 = { }
+_chData1 = { }
+_chData2 = { }
+_chData3 = { }
+_chIndex = { }
+_chWidth = { }
+_fontData = { }
+_fontIndex = { }
+_fontName = { }
+_ww0 = { }
+_ww1 = { }
+_ww2 = { }
+
+
+//----- Key pressed events --------------------------------------------------------------------------------------------
+
+WhenKeyPressed(p)
+{
+    If (Paused == "true")
+    {
+        Event.Broadcast("StopPause");
+    }
+    Else
+    {
+        Event.Broadcast("Pause");
+    }
+}
+
+WhenKeyPressed(r)
+{
+    If (PhysicsEnabled == "true")
+    {
+        Event.Broadcast("RestartLevel");
+    }
+}
+
+
+//----- Broadcast received events -------------------------------------------------------------------------------------
+
+WhenBroadcastReceived(Initialize)
+{
+    Call Initialize;
+}
+
+WhenBroadcastReceived(ResetMouseZones)
+{
+    Call Reset Mouse Zones;
+}
+
+WhenBroadcastReceived(StartKeyboard)
+{
+    Call Start Keyboard;
+}
+
+WhenBroadcastReceived(StartMouse)
+{
+    Call Start Mouse;
+}
+
+WhenBroadcastReceived(StopKeyboard)
+{
+    KeyboardInputEnabled = "false";
+}
+
+WhenBroadcastReceived(StopMouse)
+{
+    MouseInputEnabled = "false";
+}
+
+
+//----- Custom blocks -------------------------------------------------------------------------------------------------
+
+Define Check Touch Inputs (warp=true)
+{
+    If Sensing.MouseDown()
+    {
+        If (Sensing.MouseX() > (touchRegionSize * ResolutionX))
+        {
+            InputI = 1;
+        }
+        If (Sensing.MouseX() < ((-1 * touchRegionSize) * ResolutionX))
+        {
+            InputI = -1;
+        }
+        If (Sensing.MouseY() > (touchRegionSize * ResolutionY))
+        {
+            InputJ = 1;
+        }
+    }
+    If (Sensing.MouseDown() And ((abs(Sensing.MouseX()) < (touchRegionSize * ResolutionX)) And (abs(Sensing.MouseY()) < (touchRegionSize * ResolutionY))))
+    {
+        hold.s1 += 1;
+        If (hold.s1 > holdTime)
+        {
+            hold.s1 = 0;
+            Event.Broadcast("Pause");
+        }
+    }
+    Else
+    {
+        hold.s1 = 0;
+    }
+}
+
+Define Find Mouse Zone (warp=true)
+{
+    MouseZoneId = 0;
+    If (UIOverlayId == 0)
+    {
+        click.c1 = 1;
+        click.s2 = 0;
+    }
+    Else
+    {
+        click.c1 = UIOverlayZone;
+        click.s2 = (UIOverlayZone - 1);
+    }
+    Repeat ((List.Length(MouseZones.Height) - click.s2))
+    {
+        If ((abs((MouseZones.X[click.c1] - Sensing.MouseX())) < (MouseZones.Width[click.c1] / 2)) And (abs((MouseZones.Y[click.c1] - Sensing.MouseY())) < (MouseZones.Height[click.c1] / 2)))
+        {
+            MouseZoneId = click.c1;
+        }
+        click.c1 += 1;
+    }
+}
+
+Define Get Keyboard Inputs (warp=true)
+{
+    If (Sensing.KeyPressed(right arrow) Or Sensing.KeyPressed(d))
+    {
+        InputI += 1;
+    }
+    If (Sensing.KeyPressed(left arrow) Or Sensing.KeyPressed(a))
+    {
+        InputI += -1;
+    }
+    If (Sensing.KeyPressed(up arrow) Or Sensing.KeyPressed(w))
+    {
+        InputJ += 1;
+    }
+}
+
+Define Get Mouse Position (warp=true)
+{
+    Call Find Mouse Zone;
+    If (MouseZoneId == 0)
+    {
+        MouseX = (Operator.Round((((Sensing.MouseX() / (CameraScale * UIScaling)) + CameraX) / inputGridSize)) * inputGridSize);
+        MouseY = (Operator.Round((((Sensing.MouseY() / (CameraScale * UIScaling)) + CameraY) / inputGridSize)) * inputGridSize);
+    }
+    Else
+    {
+        MouseX = "";
+        MouseY = "";
+    }
+}
+
+Define Handle Mouse Click (warp=false)
+{
+    If Sensing.MouseDown()
+    {
+        Call Find Mouse Zone;
+        click.s1 = MouseZoneId;
+        If (MouseZoneId == 0)
+        {
+            lastMouseX = Sensing.MouseX();
+            lastMouseY = Sensing.MouseY();
+            Wait Until ((Not (Sensing.MouseDown())) Or ((abs((Sensing.MouseX() - lastMouseX)) > dragThreshold) Or (abs((Sensing.MouseY() - lastMouseY)) > dragThreshold)));
+            If (Not (Sensing.MouseDown()))
+            {
+                Event.Broadcast("Click");
+            }
+            Else
+            {
+                DragX = 0;
+                DragY = 0;
+                IsDragging = "true";
+                Repeat Until (Not (Sensing.MouseDown()))
+                {
+                    DragX = ((Sensing.MouseX() - lastMouseX) / (CameraScale * UIScaling));
+                    DragY = ((Sensing.MouseY() - lastMouseY) / (CameraScale * UIScaling));
+                }
+                IsDragging = "false";
+            }
+        }
+        Else
+        {
+            Wait Until (Not (Sensing.MouseDown()));
+            Call Find Mouse Zone;
+            If (MouseZoneId == click.s1)
+            {
+                Event.Broadcast("Click");
+            }
+        }
+    }
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    InputI = 0;
+    InputJ = 0;
+    MouseX = "";
+    MouseY = "";
+    inputGridSize = 10;
+    IsDragging = "false";
+    dragThreshold = 10;
+    holdTime = 16;
+    touchRegionSize = 0.1;
+    Call Reset Mouse Zones;
+}
+
+Define Reset Mouse Zones (warp=true)
+{
+    List.DeleteAll(MouseZones.X);
+    List.DeleteAll(MouseZones.Y);
+    List.DeleteAll(MouseZones.Width);
+    List.DeleteAll(MouseZones.Height);
+}
+
+Define Start Keyboard (warp=false)
+{
+    KeyboardInputEnabled = "true";
+    Repeat Until (KeyboardInputEnabled == "false")
+    {
+        InputI = 0;
+        InputJ = 0;
+        Call Get Keyboard Inputs;
+        Call Check Touch Inputs;
+    }
+}
+
+Define Start Mouse (warp=false)
+{
+    hold.s1 = 0;
+    MouseInputEnabled = "true";
+    Repeat Until (MouseInputEnabled == "false")
+    {
+        Call Get Mouse Position;
+        Call Handle Mouse Click;
+    }
+    Call Reset Mouse Zones;
+}
+
+
+//----- Costumes ------------------------------------------------------------------------------------------------------
+
+Blank.svg

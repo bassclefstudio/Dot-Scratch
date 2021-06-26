@@ -1,1 +1,0 @@
-All project scripts will be extracted to this folder
