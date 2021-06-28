@@ -1,30 +1,14 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
+currentTime = 6.831
 frames.c1 = 15
 frames.s1 = 0.033066666666667
-lastFrame = 24.976
+lastFrame = 7.129
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
 
-frames = { 
-    0.034000000000002
-    0.032
-    0.033999999999999
-    0.033000000000001
-    0.032
-    0.032999999999998
-    0.033000000000001
-    0.044999999999998
-    0.022000000000002
-    0.032
-    0.033000000000001
-    0.033999999999999
-    0.032
-    0.033999999999999
-    0.033000000000001
-}
-menu options = { }
+frames = { }
 
 
 //----- Green flag events ---------------------------------------------------------------------------------------------
@@ -32,6 +16,7 @@ menu options = { }
 WhenGreenFlagClicked()
 {
     Event.BroadcastAndWait("Initialize");
+    Event.Broadcast("CheckExit");
     Call Show Language Error Dialog;
     Sound.Play(Tada);
     File# = 1;
@@ -57,12 +42,29 @@ WhenKeyPressed(c)
 }
 
 
+//----- When greater than events --------------------------------------------------------------------------------------
+
+WhenGreaterThan(TIMER, (currentTime + 2))
+{
+    Event.Broadcast("Initialize");
+}
+
+
 //----- Broadcast received events -------------------------------------------------------------------------------------
 
 WhenBroadcastReceived(CalcFramerate)
 {
     Call Calculate Framerates((Sensing.Timer() - lastFrame))(15);
     lastFrame = Sensing.Timer();
+}
+
+WhenBroadcastReceived(CheckExit)
+{
+    Forever
+    {
+        Control.Wait(1);
+        currentTime = Sensing.Timer();
+    }
 }
 
 WhenBroadcastReceived(CopyFile)
@@ -135,10 +137,8 @@ Define Calculate Framerates(string Current Time)(string AvgSize) (warp=true)
     FrameSpeed = (Operator.Round(((28 * 2) / FPS)) / 2);
 }
 
-Define Initialize (warp=true)
+Define Cleanup (warp=true)
 {
-    Motion.GoToXY(0, 0);
-    Looks.Hide();
     List.Hide(Copy Game Files);
     List.DeleteAll(Copy Game Files);
     CameraEnabled = "false";
@@ -158,6 +158,13 @@ Define Initialize (warp=true)
     MusicEnabled = "true";
     List.DeleteAll(frames);
     FrameSpeed = 1;
+}
+
+Define Initialize (warp=true)
+{
+    Motion.GoToXY(0, 0);
+    Looks.Hide();
+    Call Cleanup;
 }
 
 Define Load Game (warp=false)

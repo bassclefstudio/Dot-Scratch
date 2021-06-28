@@ -2,26 +2,26 @@
 
 angle = -90
 automate.accRatio = 0
-automate.c1 = 54
+automate.c1 = 43
 automate.centerX = 150
-automate.centerY = 160.157705974
-automate.moveRatio = 0.00098663580000002
+automate.centerY = 197.5261336
+automate.moveRatio = 0.92216396275
 automate.newX = 150
-automate.newY = 140.039465432
-automationClock = 18.7
+automate.newY = 176.88655851
+automationClock = 0
 automationSpeed = 100
 closest.c1 = 46
 collisionDistance = 100
 collisionId = 
-collisions.c1 = 54
+collisions.c1 = 43
 collisions.speed = 100
 collisionU = 
-distanceSquared = 12853.443917039
+distanceSquared = 11925
 drag = 0.1
 findDistance.u = 
 gravity.c1 = 8
 gravityAx = 0
-gravityAy = 1
+gravityAy = -1
 isCollision = false
 jumpDelay = 4
 jumpSpeed = 12
@@ -32,50 +32,48 @@ mouseThreshold = 9
 moveSpeed = 1
 physics.accCos = 0
 physics.accMag = 1
-physics.accSin = 1
+physics.accSin = -1
 physics.aXsign = 1
-physics.aYsign = 1
+physics.aYsign = -1
 physics.collisionHandled = false
-physics.collisionId = 5
-physics.grounded = 4
-physics.priorX = 242.55106710563
-physics.priorY = 391
-physics.pX = 242.55106710563
-physics.pY = 390
+physics.collisionId = 2
+physics.grounded = 0
+physics.priorX = 197.91564864422
+physics.priorY = -11
+physics.pX = 50
+physics.pY = 105
 physics.restXsign = 1
 physics.restYsign = 1
 physics.slope = 2
 physics.slopeX = 0
-physics.slopeY = -0.5
+physics.slopeY = 0.5
 physics.vXsign = 1
-physics.vYsign = 1
+physics.vYsign = -1
 platforms.command = false
 platforms.gravity = 
 platforms.jump = false
 platforms.portal = false
 playerAx = 0
-playerAy = 1
-playerFloorId = 5
+playerAy = -1
+playerFloorId = 
 playerVx = 0
 playerVy = 0
-portal.c1 = 13
+portal.c1 = 37
 portal.dX = 80
 portal.dY = 0
 portal.s1 = 0
 portal.x = 0
 portal.y = -6
-portalId = 13
+portalId = 37
 restAx = 0
 restAy = 0
-start.c1 = 19
+start.c1 = 1
 vectorSide = 1
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
 
-collisionTests = { 
-    End
-}
+collisionTests = { }
 
 
 //----- Broadcast received events -------------------------------------------------------------------------------------

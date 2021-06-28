@@ -1,16 +1,16 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
 bounds.dX = 360
-bounds.dY = 300
-cam.c1 = 16
-camRegion = 17
+bounds.dY = 940
+cam.c1 = 9
+camRegion = 10
 inBounds = 1
-move.cX = 280
-move.cY = 250
+move.cX = 180
+move.cY = 450
 move.dX = 0
-move.dY = 15
-move.x = 280
-move.y = 265
+move.dY = 335
+move.x = 180
+move.y = 122.5
 move.zoom = 1.3333333333333
 
 
