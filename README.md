@@ -5,13 +5,13 @@ This is the Git repository for the Scratch project Dot: Return ([link](https://s
 
  - Pen text engine for UI elements: "Pen Text Engine++" provided by [@-Rex-](https://scratch.mit.edu/users/-Rex-/)
  - Triangle filler (for UI elements) by [@TheLogFather](https://scratch.mit.edu/users/TheLogFather/)
- - MIDI engine built on top of [@RokCoder](https://scratch.mit.edu/users/RokCoder/)'s [MIDI Toolkit v1](https://scratch.mit.edu/projects/286690095)
  - All other coding and art by me, [@bassclefstudio](https://scratch.mit.edu/users/bassclefstudio/)
 
 ## Changelog
 
 |Date|Version|Notes|
 |---|---|---|
+|20 Jul 2021    |`v0.14-beta`            |New physics engine supports better collision detection (using adjusted normal vector approach) and multiple simeltaneous physics objects! (to be used in a future update).|
 |27 Feb 2021    |`v0.13-beta`            |Automation! This is a new feature that will allow for the manipulation (movement, destruction/creation, etc.) of parts of the game level.|
 |13 Dec 2020    |`v0.12.1`               |Sound! Currently in beta, MIDI music plays during gameplay (not while paused or in the editor). Repeats on loop. `\[M\]` to mute. Silly sound effects are always on.|
 |13 Dec 2020    |`v0.11`                 |Language support improved by allowing two classes of language support - native pen languages (translated naturally), and tooltip languages (a warning dialog displays on launch, and all text is accompanied by a dialog in the translated language).|
