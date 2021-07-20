@@ -169,7 +169,7 @@ Define Add Legacy Segment(string X1)(string Y1)(string X2)(string Y2) type(strin
     {
         If (T == 6)
         {
-            addLegacy.s1 = (List.Length(SegmentType) + 1);
+            addLegacy.s1 = (List.Length(Segment.Type) + 1);
             Call Create Segment from Legacy((X1 * 10))((Y1 * 10)) to("")("") metadata("Portal")(Operator.Join("Portal", (addLegacy.s1 + 1)))("");
             Call Create Segment from Legacy((X2 * 10))((Y2 * 10)) to("")("") metadata("Portal")(Operator.Join("Portal", addLegacy.s1))("");
         }
@@ -257,14 +257,14 @@ Define Create Segment from Legacy(string X1)(string Y1) to(string X2)(string Y2)
     Call Is Duplicate?(X1)(Y1) to(X2)(Y2);
     If (isDuplicate == "false")
     {
-        List.Add(SegmentX1, X1);
-        List.Add(SegmentY1, Y1);
-        List.Add(SegmentX2, X2);
-        List.Add(SegmentY2, Y2);
-        List.Add(SegmentType, T);
-        List.Add(SegmentId, Operator.Join(T, List.Length(SegmentType)));
-        List.Add(SegmentArg1, Arg1);
-        List.Add(SegmentArg2, Arg2);
+        List.Add(Segment.X1, X1);
+        List.Add(Segment.Y1, Y1);
+        List.Add(Segment.X2, X2);
+        List.Add(Segment.Y2, Y2);
+        List.Add(Segment.Type, T);
+        List.Add(Segment.Id, Operator.Join(T, List.Length(Segment.Type)));
+        List.Add(Segment.Arg1, Arg1);
+        List.Add(Segment.Arg2, Arg2);
     }
 }
 
@@ -284,10 +284,10 @@ Define Is Duplicate?(string X1)(string Y1) to(string X2)(string Y2) (warp=true)
 {
     isDuplicate = "false";
     isDuplicate.c1 = 0;
-    Repeat (List.Length(SegmentType))
+    Repeat (List.Length(Segment.Type))
     {
         isDuplicate.c1 += 1;
-        If (((SegmentX1[isDuplicate.c1] == X1) And (SegmentY1[isDuplicate.c1] == Y1)) And ((SegmentX2[isDuplicate.c1] == X2) And (SegmentY2[isDuplicate.c1] == Y2)))
+        If (((Segment.X1[isDuplicate.c1] == X1) And (Segment.Y1[isDuplicate.c1] == Y1)) And ((Segment.X2[isDuplicate.c1] == X2) And (Segment.Y2[isDuplicate.c1] == Y2)))
         {
             isDuplicate = "true";
         }

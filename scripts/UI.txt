@@ -1,44 +1,44 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
 draw.s1 = 14
-incx = -105.06196760337
-incy = -86.938032396628
-ind = 30.809398126588
-locale = A Platformer Puzzle Game
-locale.s1 = 2
+incx = -180.09947787103
+incy = -117.90052212897
+ind = 40.734377591278
+locale = Levels >
+locale.s1 = 3
 padding = 10
 penBounds.x = 250
 penBounds.y = 190
-peri = 514.12393520674
-priorMx = 0
-priorMy = 780
-priorZone = 0
-priorZoom = 1.3333333333333
+peri = 844.19895574206
+priorMx = 
+priorMy = 
+priorZone = 19
+priorZoom = 0.75
 render.c1 = 6
-render.height = 26.666666666667
-render.width = 253.33333333333
+render.height = 53.333333333333
+render.width = 106.66666666667
 render.x = 120
 render.x2 = 226.66666666667
-render.y = -257.09806915899
-render.y2 = -203.76473582565
-td = 0.021940137042313
+render.y = -180
+render.y2 = -126.66666666667
+td = 0.02373716860935
 tools.c1 = 5
-tools.s1 = 4
+tools.s1 = 14
 _bq = 2
 _bq2 = 16
 _i0 = 2
-_i1 = 26
-_i2 = 139
-_i3 = -0.1875
-_i4 = 0.37291666666667
-_i5 = 0.16666666666667
-_i6 = 0.75
-_i7 = 13.333333333333
-_i8 = 13.333333333333
+_i1 = 10
+_i2 = 2528
+_i3 = 0.22
+_i4 = -0.45
+_i5 = 0.2
+_i6 = 0.9
+_i7 = 16
+_i8 = 16
 _i9 = 0
 _width = 9.92
-_x = 49.533333333333
-_y = 16.235264174346
+_x = 221.49333333333
+_y = -161.33333333333
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
@@ -14908,10 +14908,10 @@ Define Build Text Segments (warp=true)
 {
     render.c1 = 0;
     List.DeleteAll(textSegments);
-    Repeat (List.Length(SegmentType))
+    Repeat (List.Length(Segment.Type))
     {
         render.c1 += 1;
-        If (SegmentType[render.c1] == "UI")
+        If (Segment.Type[render.c1] == "UI")
         {
             List.Add(textSegments, render.c1);
         }
@@ -15027,14 +15027,14 @@ Define Draw Elements (warp=true)
                     {
                         Call Draw Button in zone(6) with content("") (fontSize("") ,((Not ())) );
                         Call Draw Icon("Delete") in zone(6);
-                        If (((SegmentType[EditorSelectedId] == "End") Or (SegmentType[EditorSelectedId] == "Camera")) Or (((SegmentType[EditorSelectedId] == "Portal") Or (SegmentType[EditorSelectedId] == "Teleport")) Or ((SegmentType[EditorSelectedId] == "Move") Or (SegmentType[EditorSelectedId] == "UI"))))
+                        If (((Segment.Type[EditorSelectedId] == "End") Or (Segment.Type[EditorSelectedId] == "Camera")) Or (((Segment.Type[EditorSelectedId] == "Portal") Or (Segment.Type[EditorSelectedId] == "Teleport")) Or ((Segment.Type[EditorSelectedId] == "Move") Or (Segment.Type[EditorSelectedId] == "UI"))))
                         {
                             Call Draw Button in zone(12) with content("") (fontSize(12) ,((Not ())) );
                             Call Draw Icon("Properties") in zone(12);
                         }
                         Call Draw Button in zone(13) with content("Aa") (fontSize(12) ,((Not ())) );
                         Call Draw Icon("Rename") in zone(13);
-                        If (EditorSelectedId < List.Length(SegmentType))
+                        If (EditorSelectedId < List.Length(Segment.Type))
                         {
                             Call Draw Button in zone(8) with content("") (fontSize("") ,((Not ())) );
                             Call Draw Icon("Forward") in zone(8);
@@ -15108,7 +15108,7 @@ Define Draw Elements (warp=true)
                                     Call Draw Dialog in Zone(UIOverlayZone);
                                     Call Draw Text("Camera Properties:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
                                     Call Draw Text("Cam Mode:") (fontSize(8) ) in zone((UIOverlayZone + 2))();
-                                    Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(12) ) in zone((UIOverlayZone + 3))();
+                                    Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(12) ) in zone((UIOverlayZone + 3))();
                                     Call Draw Button in zone((UIOverlayZone + 4)) with content("") (fontSize(12) ,() );
                                     Call Draw Icon("FixedCam") in zone((UIOverlayZone + 4));
                                     Call Draw Button in zone((UIOverlayZone + 5)) with content("") (fontSize(12) ,() );
@@ -15116,13 +15116,13 @@ Define Draw Elements (warp=true)
                                     Call Draw Button in zone((UIOverlayZone + 6)) with content("") (fontSize(12) ,() );
                                     Call Draw Icon("ViewCam") in zone((UIOverlayZone + 6));
                                     Call Draw Text("Zoom Level:") (fontSize(12) ) in zone((UIOverlayZone + 7))();
-                                    If (SegmentArg2[EditorSelectedId] == "")
+                                    If (Segment.Arg2[EditorSelectedId] == "")
                                     {
                                         Call Draw Text("Auto") (fontSize(14) ) in zone((UIOverlayZone + 8))();
                                     }
                                     Else
                                     {
-                                        Call Draw Text(SegmentArg2[EditorSelectedId]) (fontSize(16) ) in zone((UIOverlayZone + 8))();
+                                        Call Draw Text(Segment.Arg2[EditorSelectedId]) (fontSize(16) ) in zone((UIOverlayZone + 8))();
                                     }
                                     Call Draw Button in zone((UIOverlayZone + 9)) with content("Edit") (fontSize(12) ,() );
                                     Call Draw Button in zone((UIOverlayZone + 10)) with content("Close") (fontSize(12) ,() );
@@ -15134,10 +15134,10 @@ Define Draw Elements (warp=true)
                                         Call Draw Dialog in Zone(UIOverlayZone);
                                         Call Draw Text("Teleport Properties:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
                                         Call Draw Text("Name:") (fontSize(12) ) in zone((UIOverlayZone + 2))();
-                                        Call Draw Text(SegmentId[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 3))();
+                                        Call Draw Text(Segment.Id[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 3))();
                                         Call Draw Button in zone((UIOverlayZone + 4)) with content("Rename") (fontSize(12) ,() );
                                         Call Draw Icon("ConnectPortal") in zone((UIOverlayZone + 5));
-                                        Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 6))();
+                                        Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 6))();
                                         Call Draw Button in zone((UIOverlayZone + 7)) with content("Connect To") (fontSize(12) ,() );
                                         Call Draw Button in zone((UIOverlayZone + 8)) with content("Close") (fontSize(12) ,() );
                                     }
@@ -15147,7 +15147,7 @@ Define Draw Elements (warp=true)
                                         {
                                             Call Draw Dialog in Zone(UIOverlayZone);
                                             Call Draw Text("End Properties:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
-                                            If (SegmentArg1[EditorSelectedId] == "")
+                                            If (Segment.Arg1[EditorSelectedId] == "")
                                             {
                                                 Call Draw Icon("NextEnd") in zone((UIOverlayZone + 2));
                                                 Call Draw Text("(Next Level)") (fontSize(12) ) in zone((UIOverlayZone + 3))();
@@ -15155,7 +15155,7 @@ Define Draw Elements (warp=true)
                                             Else
                                             {
                                                 Call Draw Icon("MoveEnd") in zone((UIOverlayZone + 2));
-                                                Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(20) ) in zone((UIOverlayZone + 3))();
+                                                Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(20) ) in zone((UIOverlayZone + 3))();
                                             }
                                             Call Draw Button in zone((UIOverlayZone + 4)) with content("Set Level") (fontSize(12) ,() );
                                             Call Draw Button in zone((UIOverlayZone + 5)) with content("Close") (fontSize(12) ,() );
@@ -15166,13 +15166,13 @@ Define Draw Elements (warp=true)
                                             {
                                                 Call Draw Dialog in Zone(UIOverlayZone);
                                                 Call Draw Text("UI Properties:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
-                                                If (SegmentArg2[EditorSelectedId] == "")
+                                                If (Segment.Arg2[EditorSelectedId] == "")
                                                 {
-                                                    Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(12) ) in zone((UIOverlayZone + 2))();
+                                                    Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(12) ) in zone((UIOverlayZone + 2))();
                                                 }
                                                 Else
                                                 {
-                                                    Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(SegmentArg2[EditorSelectedId]) ) in zone((UIOverlayZone + 2))();
+                                                    Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(Segment.Arg2[EditorSelectedId]) ) in zone((UIOverlayZone + 2))();
                                                 }
                                                 Call Draw Button in zone((UIOverlayZone + 3)) with content("Edit") (fontSize(12) ,() );
                                                 Call Draw Button in zone((UIOverlayZone + 4)) with content("Font Size") (fontSize(12) ,() );
@@ -15184,7 +15184,7 @@ Define Draw Elements (warp=true)
                                                 {
                                                     Call Draw Dialog in Zone(UIOverlayZone);
                                                     Call Draw Text("Rename:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
-                                                    Call Draw Text(SegmentId[EditorSelectedId]) (fontSize(16) ) in zone((UIOverlayZone + 2))();
+                                                    Call Draw Text(Segment.Id[EditorSelectedId]) (fontSize(16) ) in zone((UIOverlayZone + 2))();
                                                     Call Draw Button in zone((UIOverlayZone + 3)) with content("Edit") (fontSize(12) ,() );
                                                     Call Draw Button in zone((UIOverlayZone + 4)) with content("Close") (fontSize(12) ,() );
                                                 }
@@ -15195,7 +15195,7 @@ Define Draw Elements (warp=true)
                                                         Call Draw Dialog in Zone(UIOverlayZone);
                                                         Call Draw Text("Automation Properties:") (fontSize(12) ) in zone((UIOverlayZone + 1))();
                                                         Call Draw Icon("Pin") in zone((UIOverlayZone + 2));
-                                                        Call Draw Text(SegmentArg1[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 3))();
+                                                        Call Draw Text(Segment.Arg1[EditorSelectedId]) (fontSize(14) ) in zone((UIOverlayZone + 3))();
                                                         Call Draw Button in zone((UIOverlayZone + 4)) with content("Pin To") (fontSize(12) ,() );
                                                         Call Draw Button in zone((UIOverlayZone + 5)) with content("Close") (fontSize(12) ,() );
                                                     }
@@ -15936,13 +15936,13 @@ Define Print | Pos(string x)(string y) Size(string size)(string width) Bounds(st
 
 Define Render Game Text(string #) (warp=true)
 {
-    If (SegmentArg2[#] == "")
+    If (Segment.Arg2[#] == "")
     {
-        Call Render Text(SegmentArg1[#]) at game(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) size(12);
+        Call Render Text(Segment.Arg1[#]) at game(Segment.X1[#])(Segment.Y1[#])(Segment.X2[#])(Segment.Y2[#]) size(12);
     }
     Else
     {
-        Call Render Text(SegmentArg1[#]) at game(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) size(SegmentArg2[#]);
+        Call Render Text(Segment.Arg1[#]) at game(Segment.X1[#])(Segment.Y1[#])(Segment.X2[#])(Segment.Y2[#]) size(Segment.Arg2[#]);
     }
 }
 

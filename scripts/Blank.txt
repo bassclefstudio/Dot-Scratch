@@ -1,24 +1,3 @@
-//----- Lists ---------------------------------------------------------------------------------------------------------
-
-all song data = { }
-base64 digits = { }
-dictionary = { }
-drum map = { }
-hex digits = { }
-index to actual note data = { }
-indirect indexes = { }
-json.keys = { }
-json.values = { }
-levelJsons = { }
-menu options = { }
-note indexes = { }
-patch map = { }
-raw data = { }
-run lengths = { }
-segment = { }
-segment frequency = { }
-
-
 //----- Costumes ------------------------------------------------------------------------------------------------------
 
 Blank.svg

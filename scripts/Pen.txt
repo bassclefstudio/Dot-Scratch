@@ -1,17 +1,26 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
-draw.c1 = 43
-draw.f = 0
-draw.x = -173.33333333333
+animationFrame = 14
+animationFrame.angle = 78.75
+draw.c1 = 1
+draw.x = 42.813653893985
 draw.x2 = 346.66666666667
-draw.y = -67.098069158988
-draw.y2 = -177.09806915899
-ghosts.c1 = 5
-inBounds = false
+draw.y = -165.46666666667
+draw.y2 = -100
+fill.x1 = 6.651866736
+fill.x2 = -3.5554968448
+fill.y1 = 6.651866736
+fill.y2 = -3.5554968448
+inBounds = true
+incx = -216.08862675048
+incy = -154.80606834742
+ind = 7.1817220012436
 maxGhosts = 5
 padding = 10
 penBounds.x = 250
 penBounds.y = 190
+peri = 36.418277998005
+td = 0.078443248580525
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
@@ -22,22 +31,20 @@ clippingRegions = {
     
     
 }
-prevPlayerX = { }
-prevPlayerY = { }
 
 
 //----- Broadcast received events -------------------------------------------------------------------------------------
 
 WhenBroadcastReceived(DrawFrame)
 {
-    If ((UIEnabled == "true") And (UIName == "Editor"))
+    If (EditorEnabled == "true")
     {
-        Call Draw Frame((Not ()));
+        Call Render;
         Event.Broadcast("RenderGameUI");
     }
     Else
     {
-        Call Draw Frame();
+        Call Render;
     }
 }
 
@@ -46,9 +53,19 @@ WhenBroadcastReceived(Initialize)
     Call Initialize;
 }
 
+WhenBroadcastReceived(StartAdvancedDraw)
+{
+    AdvancedDrawEnabled = "true";
+}
+
 WhenBroadcastReceived(StartDraw)
 {
     Call Start Pen;
+}
+
+WhenBroadcastReceived(StopAdvancedDraw)
+{
+    AdvancedDrawEnabled = "false";
 }
 
 WhenBroadcastReceived(StopDraw)
@@ -59,127 +76,21 @@ WhenBroadcastReceived(StopDraw)
 
 //----- Custom blocks -------------------------------------------------------------------------------------------------
 
-Define Draw Foreground Controls (warp=true)
-{
-    If (Not ((EditorDrawY == "")))
-    {
-        Call Draw Segment ((EditorDrawX)(EditorDrawY) ,("")("") ) type("Edit") isEditor((Not ()));
-    }
-    If (Not ((EditorSelectedId == 0)))
-    {
-        If (EditorSelectionType == 0)
-        {
-            Call Draw Segment ((SegmentX1[EditorSelectedId])(SegmentY1[EditorSelectedId]) ,(SegmentX2[EditorSelectedId])(SegmentY2[EditorSelectedId]) ) type("Edit") isEditor((Not ()));
-        }
-        Else
-        {
-            If (EditorSelectionType == 1)
-            {
-                Call Draw Segment ((SegmentX1[EditorSelectedId])(SegmentY1[EditorSelectedId]) ,("")("") ) type("Edit") isEditor((Not ()));
-            }
-            Else
-            {
-                If (EditorSelectionType == 2)
-                {
-                    Call Draw Segment ((SegmentX2[EditorSelectedId])(SegmentY2[EditorSelectedId]) ,("")("") ) type("Edit") isEditor((Not ()));
-                }
-                Else
-                {
-                }
-            }
-        }
-    }
-}
-
-Define Draw Frame(bool Editor?) (warp=true)
-{
-    Call Draw Map (isEditor(Editor?) );
-    If Editor?
-    {
-        Call Draw Foreground Controls;
-    }
-}
-
-Define Draw Line(string X1)(string Y1) to(string X2)(string Y2) color(string R)(string G)(string B) size(string S) transparency(string A) (warp=true)
-{
-    Call Is line(X1)(Y1) to(X2)(Y2) in bounds?;
-    If (inBounds == "true")
-    {
-        Pen.Clear();
-        Pen.SetPenSizeTo(1);
-        Pen.SetPenTo(transparency, 100);
-        Call Go to(X1)(Y1);
-        Pen.Down();
-        Call Set Pen Color | RGBA(R)(G)(B)(A);
-        Call Set pen size to(S);
-        Call Go to(X2)(Y2);
-    }
-}
-
-Define Draw Map (isEditor(bool Editor?) ) (warp=true)
+Define Draw Editor Map (warp=true)
 {
     draw.c1 = 0;
-    Repeat (List.Length(SegmentType))
+    Repeat (List.Length(Segment.Type))
     {
         draw.c1 += 1;
-        Call Draw Segment ((SegmentX1[draw.c1])(SegmentY1[draw.c1]) ,(SegmentX2[draw.c1])(SegmentY2[draw.c1]) ) type(SegmentType[draw.c1]) isEditor(Editor?);
+        Call Draw Editor Segment ((Segment.X1[draw.c1])(Segment.Y1[draw.c1]) ), ((Segment.X2[draw.c1])(Segment.Y2[draw.c1]) ) type(Segment.Type[draw.c1]);
     }
 }
 
-Define Draw Player (warp=true)
-{
-    ghosts.c1 = 0;
-    Pen.Clear();
-    Call Set Pen Color | RGBA(255)(255)(255)("");
-    Repeat (List.Length(prevPlayerX))
-    {
-        ghosts.c1 += 1;
-        Pen.SetPenTo(transparency, (100 - (ghosts.c1 * (100 / maxGhosts))));
-        Call Set pen size to((2 + (ghosts.c1 * (8 / maxGhosts))));
-        Call Go to(prevPlayerX[ghosts.c1])(prevPlayerY[ghosts.c1]);
-        Pen.Down();
-        Pen.Clear();
-    }
-    Call Set Pen Color | RGBA(255)(255)(255)("");
-    Call Set pen size to(12);
-    Call Go to(PlayerX)(PlayerY);
-    Pen.Down();
-    Pen.Clear();
-    If (PhysicsEnabled == "true")
-    {
-        draw.f += FrameSpeed;
-        If (Not ((draw.f < 1)))
-        {
-            draw.f = 0;
-            List.Add(prevPlayerX, PlayerX);
-            List.Add(prevPlayerY, PlayerY);
-            If (List.Length(prevPlayerX) > maxGhosts)
-            {
-                List.DeleteItem(prevPlayerX, 1);
-                List.DeleteItem(prevPlayerY, 1);
-            }
-        }
-    }
-}
-
-Define Draw Point(string X)(string Y) color(string R)(string G)(string B) size(string S) transparency(string A) (warp=true)
-{
-    Call Is point(X)(Y) in bounds?;
-    If (inBounds == "true")
-    {
-        Pen.Clear();
-        Call Go to(X)(Y);
-        Call Set Pen Color | RGBA(R)(G)(B)(A);
-        Call Set pen size to(S);
-        Pen.Down();
-    }
-}
-
-Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(string T) isEditor(bool Editor?) (warp=true)
+Define Draw Editor Segment ((string X1)(string Y1) ), ((string X2)(string Y2) ) type(string T) (warp=true)
 {
     If (T == "Wall")
     {
-        Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(255)(255) size(10) transparency(255);
+        Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(255)(255) size(10) transparency("");
     }
     Else
     {
@@ -212,10 +123,7 @@ Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(strin
                         {
                             Call Draw Line(X1)(Y1) to(X2)(Y2) color(100)(100)(255) size(8) transparency("");
                             Call Draw Line(X1)(Y1) to(X2)(Y2) color(120)(120)(255) size(4) transparency("");
-                            If Editor?
-                            {
-                                Call Draw Point(X1)(Y1) color(200)(40)(255) size(12) transparency(0);
-                            }
+                            Call Draw Point(X1)(Y1) color(200)(40)(255) size(12) transparency(0);
                         }
                         Else
                         {
@@ -225,7 +133,7 @@ Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(strin
                             }
                             Else
                             {
-                                If ((T == "Camera") And Editor?)
+                                If (T == "Camera")
                                 {
                                     Call Is line(X1)(Y1) to(X2)(Y2) in bounds?;
                                     If (inBounds == "true")
@@ -246,7 +154,7 @@ Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(strin
                                 }
                                 Else
                                 {
-                                    If ((T == "Edit") And Editor?)
+                                    If (T == "Edit")
                                     {
                                         If (X2 == "")
                                         {
@@ -259,20 +167,20 @@ Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(strin
                                     }
                                     Else
                                     {
-                                        If ((T == "Start") And Editor?)
+                                        If (T == "Start")
                                         {
                                             Call Draw Point(X1)(Y1) color(255)(255)(255) size(10) transparency("");
                                         }
                                         Else
                                         {
-                                            If ((T == "UI") And Editor?)
+                                            If (T == "UI")
                                             {
                                                 Call Draw Line(X1)(Y1) to(X2)(Y2) color(100)(100)(100) size(12) transparency(150);
                                                 Call Draw Line(X1)(Y2) to(X2)(Y1) color(100)(100)(100) size(12) transparency(150);
                                             }
                                             Else
                                             {
-                                                If ((T == "Move") And Editor?)
+                                                If (T == "Move")
                                                 {
                                                     Call Draw Line(X1)(Y1) to(X1)(Y1) color(255)(200)(0) size(12) transparency(200);
                                                     Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(200)(0) size(4) transparency(200);
@@ -291,6 +199,264 @@ Define Draw Segment ((string X1)(string Y1) ,(string X2)(string Y2) ) type(strin
             }
         }
     }
+}
+
+Define Draw Foreground Controls (warp=true)
+{
+    If (Not ((EditorDrawY == "")))
+    {
+        Call Draw Editor Segment ((EditorDrawX)(EditorDrawY) ), (("")("") ) type("Edit");
+    }
+    If (Not ((EditorSelectedId == 0)))
+    {
+        If (EditorSelectionType == 0)
+        {
+            Call Draw Editor Segment ((Segment.X1[EditorSelectedId])(Segment.Y1[EditorSelectedId]) ), ((Segment.X2[EditorSelectedId])(Segment.Y2[EditorSelectedId]) ) type("Edit");
+        }
+        Else
+        {
+            If (EditorSelectionType == 1)
+            {
+                Call Draw Editor Segment ((Segment.X1[EditorSelectedId])(Segment.Y1[EditorSelectedId]) ), (("")("") ) type("Edit");
+            }
+            Else
+            {
+                If (EditorSelectionType == 2)
+                {
+                    Call Draw Editor Segment ((Segment.X2[EditorSelectedId])(Segment.Y2[EditorSelectedId]) ), (("")("") ) type("Edit");
+                }
+                Else
+                {
+                }
+            }
+        }
+    }
+}
+
+Define Draw Game Map (warp=true)
+{
+    draw.c1 = 0;
+    Repeat (List.Length(Segment.Type))
+    {
+        draw.c1 += 1;
+        Call Draw Game Segment ((Segment.X1[draw.c1])(Segment.Y1[draw.c1]) ), ((Segment.X2[draw.c1])(Segment.Y2[draw.c1]) ) type(Segment.Type[draw.c1]);
+    }
+}
+
+Define Draw Game Object ((string X)(string Y) ) with velocity(string vX)(string vY) and type(string T) (state(string S)(string Arg) ) (warp=true)
+{
+    If (T == "Player")
+    {
+        Call Draw Point(X)(Y) color(255)(255)(255) size(10) transparency("");
+    }
+    Else
+    {
+    }
+}
+
+Define Draw Game Segment ((string X1)(string Y1) ), ((string X2)(string Y2) ) type(string T) (warp=true)
+{
+    If (T == "Wall")
+    {
+        Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(255)(255) size(10) transparency("");
+    }
+    Else
+    {
+        If (T == "Lava")
+        {
+            Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(40)(40) size(10) transparency("");
+        }
+        Else
+        {
+            If (T == "Bounce")
+            {
+                Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(200)(100) size(10) transparency("");
+            }
+            Else
+            {
+                If (T == "Flip")
+                {
+                    Call Draw Line(X1)(Y1) to(X2)(Y2) color(255)(0)(255) size(5) transparency("");
+                }
+                Else
+                {
+                    If (T == "Portal")
+                    {
+                        Call Draw Point(X1)(Y1) color(100)(100)(255) size(16) transparency("");
+                        Call Draw Point(X1)(Y1) color(120)(120)(255) size(12) transparency("");
+                    }
+                    Else
+                    {
+                        If (T == "Teleport")
+                        {
+                            Call Draw Line(X1)(Y1) to(X2)(Y2) color(100)(100)(255) size(8) transparency("");
+                            Call Draw Line(X1)(Y1) to(X2)(Y2) color(120)(120)(255) size(4) transparency("");
+                            Call Draw Point(X1)(Y1) color(200)(40)(255) size(12) transparency("");
+                        }
+                        Else
+                        {
+                            If (T == "End")
+                            {
+                                If (Not ((animationFrame.angle > 180)))
+                                {
+                                    Call Draw Point((X1 + (sin(animationFrame.angle) * 4)))((Y1 + (cos(animationFrame.angle) * 12))) color(150)(255)(150) size((4 + (2 * cos(animationFrame.angle)))) transparency("");
+                                }
+                                Call Fill Rectangle at(X1)(Y1) with dimensions(4)(4) color(100)(255)(100) radius(4) rotation(animationFrame.angle) transparency("");
+                                If (animationFrame.angle > 180)
+                                {
+                                    Call Draw Point((X1 + (sin(animationFrame.angle) * 4)))((Y1 + (cos(animationFrame.angle) * 12))) color(150)(255)(150) size((4 + (2 * cos(animationFrame.angle)))) transparency("");
+                                }
+                                Call Draw Point((X1 + (sin(animationFrame.angle) * 10)))((Y1 + (cos(animationFrame.angle) * 10))) color(150)(255)(150) size((2 + cos(animationFrame.angle))) transparency("");
+                            }
+                            Else
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Define Draw Line(string X1)(string Y1) to(string X2)(string Y2) color(string R)(string G)(string B) size(string S) transparency(string A) (warp=true)
+{
+    Call Is line(X1)(Y1) to(X2)(Y2) in bounds?;
+    If (inBounds == "true")
+    {
+        Pen.Clear();
+        Pen.SetPenSizeTo(1);
+        Pen.SetPenTo(transparency, 100);
+        Call Go to(X1)(Y1);
+        Pen.Down();
+        Call Set Pen Color | RGBA(R)(G)(B)(A);
+        Call Set pen size to(S);
+        Call Go to(X2)(Y2);
+    }
+}
+
+Define Draw Objects (warp=true)
+{
+    draw.c1 = 0;
+    Repeat (List.Length(Objects.Type))
+    {
+        draw.c1 += 1;
+        Call Draw Game Object ((Objects.X[draw.c1])(Objects.Y[draw.c1]) ) with velocity(Objects.vX[draw.c1])(Objects.vY[draw.c1]) and type(Objects.Type[draw.c1]) (state(Objects.State[draw.c1])(Objects.Arg1[draw.c1]) );
+    }
+}
+
+Define Draw Point(string X)(string Y) color(string R)(string G)(string B) size(string S) transparency(string A) (warp=true)
+{
+    Call Is point(X)(Y) in bounds?;
+    If (inBounds == "true")
+    {
+        Pen.Clear();
+        Call Go to(X)(Y);
+        Call Set Pen Color | RGBA(R)(G)(B)(A);
+        Call Set pen size to(S);
+        Pen.Down();
+    }
+}
+
+Define Fill Rectangle(string X1)(string Y1)(string X2)(string Y2)(string X3)(string Y3)(string X4)(string Y4) resolution:(string res) cornerRadius:(string rad) (warp=true)
+{
+    Call fill triangle(X1)(Y1)(X2)(Y2)(X3)(Y3) resolution:(res) cornerSize:(rad);
+    Call fill triangle(X1)(Y1)(X4)(Y4)(X3)(Y3) resolution:(res) cornerSize:(rad);
+}
+
+Define Fill Rectangle(string X1)(string Y1) to(string X2)(string Y2) color(string R)(string G)(string B) radius(string Radius) transparency(string A) (warp=true)
+{
+    Call Is line(X1)(Y1) to(X2)(Y2) in bounds?;
+    If (inBounds == "true")
+    {
+        Call Get point(X2)(Y2);
+        draw.x2 = draw.x;
+        draw.y2 = draw.y;
+        Call Get point(X1)(Y1);
+        Call Set Pen Color | RGBA(R)(G)(B)(A);
+        Call Fill Rectangle(draw.x)(draw.y)(draw.x2)(draw.y)(draw.x2)(draw.y2)(draw.x)(draw.y2) resolution:(1) cornerRadius:(Radius);
+    }
+}
+
+Define Fill Rectangle at(string X)(string Y) with dimensions(string W)(string H) color(string R)(string G)(string B) radius(string Radius) rotation(string Angle) transparency(string A) (warp=true)
+{
+    fill.x1 = (((W * cos(Angle)) + (H * sin(Angle))) * CameraScale);
+    fill.y1 = (((H * cos(Angle)) + (W * sin(Angle))) * CameraScale);
+    fill.x2 = (((W * cos(Angle)) - (H * sin(Angle))) * CameraScale);
+    fill.y2 = (((H * cos(Angle)) - (W * sin(Angle))) * CameraScale);
+    Call Is line((X + fill.x1))((Y + fill.y1)) to((X - fill.x1))((Y - fill.y1)) in bounds?;
+    If (inBounds == "true")
+    {
+        Call Get point(X)(Y);
+        Call Set Pen Color | RGBA(R)(G)(B)(A);
+        Call Fill Rectangle((draw.x + fill.x2))((draw.y + fill.y1))((draw.x + fill.x1))((draw.y - fill.y2))((draw.x - fill.x2))((draw.y - fill.y1))((draw.x - fill.x1))((draw.y + fill.y2)) resolution:(1) cornerRadius:(Radius);
+    }
+}
+
+Define fill tri, inner 1(num Ax)(num Ay)(num Bx)(num By)(num Cx)(num Cy)(num lena)(num lenb)(num lenc)(num res*1.4) (warp=false)
+{
+    peri = ((lena + lenb) + lenc);
+    ind = (sqrt((((((lenb + lenc) - lena) * ((lenc + lena) - lenb)) * ((lena + lenb) - lenc)) / peri)) + (res*1.4 / 1.5));
+    If (ind > res*1.4)
+    {
+        incx = ((((lena * Ax) + (lenb * Bx)) + (lenc * Cx)) / peri);
+        incy = ((((lena * Ay) + (lenb * By)) + (lenc * Cy)) / peri);
+        If ((lena < lenb) And (lena < lenc))
+        {
+            Call fill tri, inner 2(Ax)(Ay)(Bx)(By)(Cx)(Cy)((incx - Ax))((incy - Ay))((incx - Bx))((incy - By))((incx - Cx))((incy - Cy))(ind)((-0.5 - (ind / (sqrt((((incx - Ax) * (incx - Ax)) + ((incy - Ay) * (incy - Ay)))) * 4))))(res*1.4);
+        }
+        Else
+        {
+            If ((lenb > lena) Or (lenb > lenc))
+            {
+                Call fill tri, inner 2(Cx)(Cy)(Bx)(By)(Ax)(Ay)((incx - Cx))((incy - Cy))((incx - Bx))((incy - By))((incx - Ax))((incy - Ay))(ind)((-0.5 - (ind / (sqrt((((incx - Cx) * (incx - Cx)) + ((incy - Cy) * (incy - Cy)))) * 4))))(res*1.4);
+            }
+            Else
+            {
+                Call fill tri, inner 2(Bx)(By)(Ax)(Ay)(Cx)(Cy)((incx - Bx))((incy - By))((incx - Ax))((incy - Ay))((incx - Cx))((incy - Cy))(ind)((-0.5 - (ind / (sqrt((((incx - Bx) * (incx - Bx)) + ((incy - By) * (incy - By)))) * 4))))(res*1.4);
+            }
+        }
+    }
+}
+
+Define fill tri, inner 2(num Ax)(num Ay)(num Bx)(num By)(num Cx)(num Cy)(num Aox)(num Aoy)(num Box)(num Boy)(num Cox)(num Coy)(num ind)(num rate)(num res*1.4) (warp=false)
+{
+    Pen.Clear();
+    Motion.GoToXY(Operator.Round(incx), Operator.Round(incy));
+    Call Set pen size to(ind);
+    Pen.Down();
+    Pen.Clear();
+    td = (rate + 1);
+    Repeat Until ((ind * td) < res*1.4)
+    {
+        Call Set pen size to((ind * td));
+        Motion.GoToXY(((Aox * td) + Ax), ((Aoy * td) + Ay));
+        Pen.Down();
+        Motion.GoToXY(((Box * td) + Bx), ((Boy * td) + By));
+        Motion.GoToXY(((Cox * td) + Cx), ((Coy * td) + Cy));
+        Motion.GoToXY(((Aox * td) + Ax), ((Aoy * td) + Ay));
+        Pen.Clear();
+        td += (td * rate);
+    }
+    Call Set pen size to((ind * td));
+    Motion.GoToXY(((Aox * td) + Ax), ((Aoy * td) + Ay));
+    Pen.Down();
+    Motion.GoToXY(((Box * td) + Bx), ((Boy * td) + By));
+    Motion.GoToXY(((Cox * td) + Cx), ((Coy * td) + Cy));
+    Motion.GoToXY(((Aox * td) + Ax), ((Aoy * td) + Ay));
+    Pen.Clear();
+}
+
+Define fill triangle(string Ax)(string Ay)(string Bx)(string By)(string Cx)(string Cy) resolution:(string res) cornerSize:(string rad) (warp=true)
+{
+    Call fill tri, inner 1(Ax)(Ay)(Bx)(By)(Cx)(Cy)(sqrt((((Bx - Cx) * (Bx - Cx)) + ((By - Cy) * (By - Cy)))))(sqrt((((Ax - Cx) * (Ax - Cx)) + ((Ay - Cy) * (Ay - Cy)))))(sqrt((((Ax - Bx) * (Ax - Bx)) + ((Ay - By) * (Ay - By)))))((res * 1.4));
+    Call Set pen size to(rad);
+    Motion.GoToXY(Ax, Ay);
+    Pen.Down();
+    Motion.GoToXY(Bx, By);
+    Motion.GoToXY(Cx, Cy);
+    Motion.GoToXY(Ax, Ay);
+    Pen.Clear();
 }
 
 Define Get point(string X)(string Y) (warp=true)
@@ -312,10 +478,10 @@ Define Initialize (warp=true)
     Call Set Size to(1000) %;
     Pen.Clear();
     padding = 10;
+    animationFrame = 0;
     penBounds.x = ((ResolutionX / 2) + padding);
     penBounds.y = ((ResolutionY / 2) + padding);
     maxGhosts = 5;
-    Call Reset Ghosting;
 }
 
 Define Is line(string X1)(string Y1) to(string X2)(string Y2) in bounds? (warp=true)
@@ -347,10 +513,32 @@ Define Is point(string X)(string Y) in bounds? (warp=true)
     }
 }
 
-Define Reset Ghosting (warp=true)
+Define Render (warp=true)
 {
-    List.DeleteAll(prevPlayerX);
-    List.DeleteAll(prevPlayerY);
+    If ((UIName == "Editor") And (UIEnabled == "true"))
+    {
+        Call Draw Editor Map;
+        Call Draw Foreground Controls;
+    }
+    Else
+    {
+        Call Draw Game Map;
+        If (AdvancedDrawEnabled == "true")
+        {
+            Call Draw Objects;
+        }
+    }
+}
+
+Define Reset Animation Frame (warp=true)
+{
+    animationFrame = 0;
+    Call Set Animation Frames;
+}
+
+Define Set Animation Frames (warp=true)
+{
+    animationFrame.angle = (animationFrame * (360 / 64));
 }
 
 Define Set Pen Color | RGBA(string R)(string G)(string B)(string A) (warp=true)
@@ -372,8 +560,8 @@ Define Set Size to(string %) % (warp=true)
 
 Define Start Pen (warp=false)
 {
-    Call Reset Ghosting;
     DrawEnabled = "true";
+    Call Reset Animation Frame;
     Repeat Until (DrawEnabled == "false")
     {
         Pen.Clear();
@@ -381,18 +569,57 @@ Define Start Pen (warp=false)
         {
             Event.Broadcast("RenderGameUI");
         }
-        Call Draw Frame(((UIEnabled == "true") And (UIName == "Editor")));
-        If (PlayerDrawEnabled == "false")
-        {
-            Call Reset Ghosting;
-        }
-        Else
-        {
-            Call Draw Player;
-        }
+        Call Render;
+        Call Tick Animation Frame;
         Event.Broadcast("CalcFramerate");
     }
 }
+
+Define Tick Animation Frame (warp=true)
+{
+    If (AdvancedDrawEnabled == "true")
+    {
+        animationFrame = ((animationFrame + 1) % 64);
+        Call Set Animation Frames;
+    }
+}
+
+
+//----- Orphaned blocks -----------------------------------------------------------------------------------------------
+
+Editor
+
+Animation
+
+Y1
+
+X2
+
+T
+
+S
+
+Animated
+
+Frame
+
+Animated
+
+Animated
+
+Player
+
+res
+
+rad
+
+A
+
+Angle
+
+angle
+
+Cap
 
 
 //----- Costumes ------------------------------------------------------------------------------------------------------

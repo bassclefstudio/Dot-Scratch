@@ -1,14 +1,14 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
-click.c1 = 7
-click.s1 = 7
-click.s2 = 0
+click.c1 = 23
+click.s1 = 19
+click.s2 = 13
 dragThreshold = 10
 hold.s1 = 0
 holdTime = 16
 inputGridSize = 10
-lastMouseX = -40
-lastMouseY = -106
+lastMouseX = 134
+lastMouseY = 75
 touchRegionSize = 0.1
 
 

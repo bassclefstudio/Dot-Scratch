@@ -1,14 +1,29 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
-currentTime = 6.831
 frames.c1 = 15
-frames.s1 = 0.033066666666667
-lastFrame = 7.129
+frames.s1 = 0.033
+lastFrame = 10.13
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
 
-frames = { }
+frames = { 
+    0.032999999999999
+    0.033000000000001
+    0.033999999999999
+    0.033000000000001
+    0.032
+    0.032999999999999
+    0.032999999999999
+    0.034000000000001
+    0.032
+    0.033999999999999
+    0.033000000000001
+    0.032999999999999
+    0.032
+    0.032999999999999
+    0.033000000000001
+}
 
 
 //----- Green flag events ---------------------------------------------------------------------------------------------
@@ -18,12 +33,10 @@ WhenGreenFlagClicked()
     Event.BroadcastAndWait("Initialize");
     Event.Broadcast("CheckExit");
     Call Show Language Error Dialog;
-    Sound.Play(Tada);
+    Sound.Play(Coin);
     File# = 1;
     Call Load Game;
     Call Start Game;
-    MIDI: Song = "Ondine";
-    Event.Broadcast("MIDI: Play");
 }
 
 
@@ -42,29 +55,12 @@ WhenKeyPressed(c)
 }
 
 
-//----- When greater than events --------------------------------------------------------------------------------------
-
-WhenGreaterThan(TIMER, (currentTime + 2))
-{
-    Event.Broadcast("Initialize");
-}
-
-
 //----- Broadcast received events -------------------------------------------------------------------------------------
 
 WhenBroadcastReceived(CalcFramerate)
 {
     Call Calculate Framerates((Sensing.Timer() - lastFrame))(15);
     lastFrame = Sensing.Timer();
-}
-
-WhenBroadcastReceived(CheckExit)
-{
-    Forever
-    {
-        Control.Wait(1);
-        currentTime = Sensing.Timer();
-    }
 }
 
 WhenBroadcastReceived(CopyFile)
@@ -97,19 +93,9 @@ WhenBroadcastReceived(StartGame)
     Call Start Game;
 }
 
-WhenBroadcastReceived(StartPlayerDraw)
-{
-    PlayerDrawEnabled = "true";
-}
-
 WhenBroadcastReceived(StopGame)
 {
     Call Stop Game;
-}
-
-WhenBroadcastReceived(StopPlayerDraw)
-{
-    PlayerDrawEnabled = "false";
 }
 
 
@@ -135,6 +121,10 @@ Define Calculate Framerates(string Current Time)(string AvgSize) (warp=true)
     frames.s1 = (frames.s1 / List.Length(frames));
     FPS = Operator.Round((1 / frames.s1));
     FrameSpeed = (Operator.Round(((28 * 2) / FPS)) / 2);
+    If (FrameSpeed > 1)
+    {
+        FrameSpeed = 1;
+    }
 }
 
 Define Cleanup (warp=true)
@@ -144,18 +134,16 @@ Define Cleanup (warp=true)
     CameraEnabled = "false";
     DragEnabled = "false";
     DrawEnabled = "false";
+    AdvancedDrawEnabled = "false";
     DialogEnabled = "false";
     EditorEnabled = "false";
     KeyboardInputEnabled = "false";
     MouseInputEnabled = "false";
     PhysicsEnabled = "false";
-    PlayerDrawEnabled = "false";
-    RaycastDrawEnabled = "false";
-    RaycastEnabled = "false";
     Paused = "false";
     UIEnabled = "false";
-    TextSubsystemEnabled = "true";
     MusicEnabled = "true";
+    TextSubsystemEnabled = "true";
     List.DeleteAll(frames);
     FrameSpeed = 1;
 }
@@ -198,7 +186,7 @@ Define Show Language Error Dialog (warp=false)
 Define Start Game (warp=false)
 {
     Event.Broadcast("StartCamera");
-    Event.Broadcast("StartPlayerDraw");
+    Event.Broadcast("StartAdvancedDraw");
     Event.Broadcast("StartDraw");
     Event.Broadcast("StartPhysics");
     Event.Broadcast("StartAutomation");
@@ -208,8 +196,8 @@ Define Start Game (warp=false)
 Define Stop Game (warp=false)
 {
     Event.BroadcastAndWait("StopCamera");
-    Event.BroadcastAndWait("StopPlayerDraw");
     Event.BroadcastAndWait("StopDraw");
+    Event.BroadcastAndWait("StopAdvancedDraw");
     Event.BroadcastAndWait("StopPhysics");
     Event.BroadcastAndWait("StopAutomation");
     Event.BroadcastAndWait("StopKeyboard");
@@ -223,4 +211,4 @@ Blank.svg
 
 //----- Sounds --------------------------------------------------------------------------------------------------------
 
-Tada.wav
+Coin.wav

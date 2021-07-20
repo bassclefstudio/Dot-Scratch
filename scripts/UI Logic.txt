@@ -1,59 +1,20 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
-addZone.h = 216
-addZone.w = 240
+addZone.h = 280
+addZone.w = 400
 addZone.x = 0
 addZone.y = 0
-createSegment.id = 45
-draw.s1 = 0
+createSegment.id = 19
 EditorCallbackUI = 0
-incx = 0
-incy = 0
-ind = 0
-lastDragX = 120
-lastDragX2 = 260
-lastDragY = 20
-lastDragY2 = 20
-locale = 0
-locale.s1 = 0
+lastDragX = 213
+lastDragX2 = 
+lastDragY = 138
+lastDragY2 = 
 maxClickDistance = 400
-padding = 0
-penBounds.x = 0
-penBounds.y = 0
-peri = 0
 priorDialogContent = Ondine: Sorting music data...
 priorDialogValue = 1
-priorMx = 0
-priorMy = 0
-priorZone = 0
-priorZoom = 0
-render.c1 = 0
-render.height = 0
-render.width = 0
-render.x = 0
-render.x2 = 0
-render.y = 0
-render.y2 = 0
-td = 0
-tools.c1 = 0
-tools.s1 = 0
-zones.c1 = 4
-zones.s1 = 40
-_bq = 0
-_bq2 = 0
-_i0 = 0
-_i1 = 0
-_i2 = 0
-_i3 = 0
-_i4 = 0
-_i5 = 0
-_i6 = 0
-_i7 = 0
-_i8 = 0
-_i9 = 0
-_width = 0
-_x = 0
-_y = 0
+zones.c1 = 2
+zones.s1 = 32
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
@@ -441,26 +402,26 @@ Define Create Pause Window Zones (warp=true)
 
 Define Create Segment from(string X1)(string Y1) to(string X2)(string Y2) type(string T) id(string I) args(string A1)(string A2) (warp=true)
 {
-    List.Add(SegmentX1, X1);
-    List.Add(SegmentY1, Y1);
-    List.Add(SegmentX2, X2);
-    List.Add(SegmentY2, Y2);
-    List.Add(SegmentType, T);
+    List.Add(Segment.X1, X1);
+    List.Add(Segment.Y1, Y1);
+    List.Add(Segment.X2, X2);
+    List.Add(Segment.Y2, Y2);
+    List.Add(Segment.Type, T);
     If (I == "")
     {
-        createSegment.id = List.Length(SegmentId);
-        Repeat Until (Not (List.ContainsItem(SegmentId, createSegment.id)))
+        createSegment.id = List.Length(Segment.Id);
+        Repeat Until (Not (List.ContainsItem(Segment.Id, createSegment.id)))
         {
-            createSegment.id = Operator.Random(1 / List.Length(SegmentType));
+            createSegment.id = Operator.Random(1 / List.Length(Segment.Type));
         }
-        List.Add(SegmentId, createSegment.id);
+        List.Add(Segment.Id, createSegment.id);
     }
     Else
     {
-        List.Add(SegmentId, I);
+        List.Add(Segment.Id, I);
     }
-    List.Add(SegmentArg1, A1);
-    List.Add(SegmentArg2, A2);
+    List.Add(Segment.Arg1, A1);
+    List.Add(Segment.Arg2, A2);
 }
 
 Define Create Selection Callback (warp=true)
@@ -471,14 +432,14 @@ Define Create Selection Callback (warp=true)
 
 Define Delete Segment(string #) (warp=true)
 {
-    List.DeleteItem(SegmentX1, #);
-    List.DeleteItem(SegmentY1, #);
-    List.DeleteItem(SegmentX2, #);
-    List.DeleteItem(SegmentY2, #);
-    List.DeleteItem(SegmentType, #);
-    List.DeleteItem(SegmentId, #);
-    List.DeleteItem(SegmentArg1, #);
-    List.DeleteItem(SegmentArg2, #);
+    List.DeleteItem(Segment.X1, #);
+    List.DeleteItem(Segment.Y1, #);
+    List.DeleteItem(Segment.X2, #);
+    List.DeleteItem(Segment.Y2, #);
+    List.DeleteItem(Segment.Type, #);
+    List.DeleteItem(Segment.Id, #);
+    List.DeleteItem(Segment.Arg1, #);
+    List.DeleteItem(Segment.Arg2, #);
 }
 
 Define Dialog Click(string #) (warp=true)
@@ -493,9 +454,9 @@ Define Editor Callback(string OldSelection)(string NewSelection)(string #) (warp
 {
     If (# == 5)
     {
-        If ((SegmentType[NewSelection] == "Portal") Or (SegmentType[NewSelection] == "Teleport"))
+        If ((Segment.Type[NewSelection] == "Portal") Or (Segment.Type[NewSelection] == "Teleport"))
         {
-            List.ReplaceItem(SegmentArg1, OldSelection, SegmentId[NewSelection]);
+            List.ReplaceItem(Segment.Arg1, OldSelection, Segment.Id[NewSelection]);
             Call Trigger UI Refresh;
         }
     }
@@ -503,7 +464,7 @@ Define Editor Callback(string OldSelection)(string NewSelection)(string #) (warp
     {
         If (# == 9)
         {
-            List.ReplaceItem(SegmentArg1, OldSelection, SegmentId[NewSelection]);
+            List.ReplaceItem(Segment.Arg1, OldSelection, Segment.Id[NewSelection]);
             Call Trigger UI Refresh;
         }
         Else
@@ -581,7 +542,7 @@ Define Editor Click(string #) (warp=false)
                         {
                             If (# == 8)
                             {
-                                If ((Not ((EditorSelectedId == 0))) And (EditorSelectedId < List.Length(SegmentType)))
+                                If ((Not ((EditorSelectedId == 0))) And (EditorSelectedId < List.Length(Segment.Type)))
                                 {
                                     Call Swap segments(EditorSelectedId) and((EditorSelectedId + 1));
                                     Call Trigger Full Refresh;
@@ -601,31 +562,31 @@ Define Editor Click(string #) (warp=false)
                                 {
                                     If (# == 12)
                                     {
-                                        If (SegmentType[EditorSelectedId] == "Camera")
+                                        If (Segment.Type[EditorSelectedId] == "Camera")
                                         {
                                             Call Open (Editor) UI(4)();
                                         }
                                         Else
                                         {
-                                            If ((SegmentType[EditorSelectedId] == "Portal") Or (SegmentType[EditorSelectedId] == "Teleport"))
+                                            If ((Segment.Type[EditorSelectedId] == "Portal") Or (Segment.Type[EditorSelectedId] == "Teleport"))
                                             {
                                                 Call Open (Editor) UI(5)();
                                             }
                                             Else
                                             {
-                                                If (SegmentType[EditorSelectedId] == "End")
+                                                If (Segment.Type[EditorSelectedId] == "End")
                                                 {
                                                     Call Open (Editor) UI(6)();
                                                 }
                                                 Else
                                                 {
-                                                    If (SegmentType[EditorSelectedId] == "UI")
+                                                    If (Segment.Type[EditorSelectedId] == "UI")
                                                     {
                                                         Call Open (Editor) UI(7)();
                                                     }
                                                     Else
                                                     {
-                                                        If (SegmentType[EditorSelectedId] == "Move")
+                                                        If (Segment.Type[EditorSelectedId] == "Move")
                                                         {
                                                             Call Open (Editor) UI(9)();
                                                         }
@@ -861,21 +822,21 @@ Define Editor Click(string #) (warp=false)
                         {
                             If (# == (UIOverlayZone + 4))
                             {
-                                List.ReplaceItem(SegmentArg1, EditorSelectedId, "Fixed");
+                                List.ReplaceItem(Segment.Arg1, EditorSelectedId, "Fixed");
                                 Call Trigger UI Refresh;
                             }
                             Else
                             {
                                 If (# == (UIOverlayZone + 5))
                                 {
-                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, "Bound");
+                                    List.ReplaceItem(Segment.Arg1, EditorSelectedId, "Bound");
                                     Call Trigger UI Refresh;
                                 }
                                 Else
                                 {
                                     If (# == (UIOverlayZone + 6))
                                     {
-                                        List.ReplaceItem(SegmentArg1, EditorSelectedId, "View");
+                                        List.ReplaceItem(Segment.Arg1, EditorSelectedId, "View");
                                         Call Trigger UI Refresh;
                                     }
                                     Else
@@ -885,11 +846,11 @@ Define Editor Click(string #) (warp=false)
                                             Sensing.Ask("Enter Zoom Level:");
                                             If ((Sensing.Answer() + 0) == Sensing.Answer())
                                             {
-                                                List.ReplaceItem(SegmentArg2, EditorSelectedId, Sensing.Answer());
+                                                List.ReplaceItem(Segment.Arg2, EditorSelectedId, Sensing.Answer());
                                             }
                                             Else
                                             {
-                                                List.ReplaceItem(SegmentArg2, EditorSelectedId, "");
+                                                List.ReplaceItem(Segment.Arg2, EditorSelectedId, "");
                                             }
                                             Call Trigger UI Refresh;
                                         }
@@ -914,9 +875,9 @@ Define Editor Click(string #) (warp=false)
                                 If (# == (UIOverlayZone + 4))
                                 {
                                     Sensing.Ask("Rename:");
-                                    If (Not (List.ContainsItem(SegmentId, Sensing.Answer())))
+                                    If (Not (List.ContainsItem(Segment.Id, Sensing.Answer())))
                                     {
-                                        List.ReplaceItem(SegmentId, EditorSelectedId, Sensing.Answer());
+                                        List.ReplaceItem(Segment.Id, EditorSelectedId, Sensing.Answer());
                                     }
                                     Call Trigger UI Refresh;
                                 }
@@ -947,7 +908,7 @@ Define Editor Click(string #) (warp=false)
                                         Sensing.Ask("Level # or Name:");
                                         If (Sensing.Answer() == "")
                                         {
-                                            List.ReplaceItem(SegmentArg1, EditorSelectedId, "");
+                                            List.ReplaceItem(Segment.Arg1, EditorSelectedId, "");
                                             Call Trigger UI Refresh;
                                         }
                                         Else
@@ -956,7 +917,7 @@ Define Editor Click(string #) (warp=false)
                                             {
                                                 If ((Sensing.Answer() > 0) And (Not ((Sensing.Answer() > List.Length(LevelNames)))))
                                                 {
-                                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, LevelNames[Sensing.Answer()]);
+                                                    List.ReplaceItem(Segment.Arg1, EditorSelectedId, LevelNames[Sensing.Answer()]);
                                                     Call Trigger UI Refresh;
                                                 }
                                             }
@@ -964,7 +925,7 @@ Define Editor Click(string #) (warp=false)
                                             {
                                                 If List.ContainsItem(LevelNames, Sensing.Answer())
                                                 {
-                                                    List.ReplaceItem(SegmentArg1, EditorSelectedId, Sensing.Answer());
+                                                    List.ReplaceItem(Segment.Arg1, EditorSelectedId, Sensing.Answer());
                                                     Call Trigger UI Refresh;
                                                 }
                                             }
@@ -988,7 +949,7 @@ Define Editor Click(string #) (warp=false)
                                         If (# == (UIOverlayZone + 3))
                                         {
                                             Sensing.Ask("Insert Text:");
-                                            List.ReplaceItem(SegmentArg1, EditorSelectedId, Sensing.Answer());
+                                            List.ReplaceItem(Segment.Arg1, EditorSelectedId, Sensing.Answer());
                                             Call Trigger UI Refresh;
                                         }
                                         Else
@@ -998,11 +959,11 @@ Define Editor Click(string #) (warp=false)
                                                 Sensing.Ask("Font Size:");
                                                 If ((Sensing.Answer() * 1) == Sensing.Answer())
                                                 {
-                                                    List.ReplaceItem(SegmentArg2, EditorSelectedId, Sensing.Answer());
+                                                    List.ReplaceItem(Segment.Arg2, EditorSelectedId, Sensing.Answer());
                                                 }
                                                 Else
                                                 {
-                                                    List.ReplaceItem(SegmentArg2, EditorSelectedId, "");
+                                                    List.ReplaceItem(Segment.Arg2, EditorSelectedId, "");
                                                 }
                                                 Call Trigger UI Refresh;
                                             }
@@ -1025,9 +986,9 @@ Define Editor Click(string #) (warp=false)
                                             If (# == (UIOverlayZone + 3))
                                             {
                                                 Sensing.Ask("Rename:");
-                                                If (Not (List.ContainsItem(SegmentId, Sensing.Answer())))
+                                                If (Not (List.ContainsItem(Segment.Id, Sensing.Answer())))
                                                 {
-                                                    List.ReplaceItem(SegmentId, EditorSelectedId, Sensing.Answer());
+                                                    List.ReplaceItem(Segment.Id, EditorSelectedId, Sensing.Answer());
                                                 }
                                                 Call Trigger UI Refresh;
                                             }
@@ -1094,21 +1055,21 @@ Define Editor Drag (warp=false)
     {
         If (UIOverlayId == 0)
         {
-            lastDragX = SegmentX1[EditorSelectedId];
-            lastDragY = SegmentY1[EditorSelectedId];
-            lastDragX2 = SegmentX2[EditorSelectedId];
-            lastDragY2 = SegmentY2[EditorSelectedId];
+            lastDragX = Segment.X1[EditorSelectedId];
+            lastDragY = Segment.Y1[EditorSelectedId];
+            lastDragX2 = Segment.X2[EditorSelectedId];
+            lastDragY2 = Segment.Y2[EditorSelectedId];
             Repeat Until (IsDragging == "false")
             {
                 If ((EditorSelectionType == 0) Or (EditorSelectionType == 1))
                 {
-                    List.ReplaceItem(SegmentX1, EditorSelectedId, (lastDragX + (Operator.Round((DragX / 10)) * 10)));
-                    List.ReplaceItem(SegmentY1, EditorSelectedId, (lastDragY + (Operator.Round((DragY / 10)) * 10)));
+                    List.ReplaceItem(Segment.X1, EditorSelectedId, (lastDragX + (Operator.Round((DragX / 10)) * 10)));
+                    List.ReplaceItem(Segment.Y1, EditorSelectedId, (lastDragY + (Operator.Round((DragY / 10)) * 10)));
                 }
                 If ((EditorSelectionType == 0) Or (EditorSelectionType == 2))
                 {
-                    List.ReplaceItem(SegmentX2, EditorSelectedId, (lastDragX2 + (Operator.Round((DragX / 10)) * 10)));
-                    List.ReplaceItem(SegmentY2, EditorSelectedId, (lastDragY2 + (Operator.Round((DragY / 10)) * 10)));
+                    List.ReplaceItem(Segment.X2, EditorSelectedId, (lastDragX2 + (Operator.Round((DragX / 10)) * 10)));
+                    List.ReplaceItem(Segment.Y2, EditorSelectedId, (lastDragY2 + (Operator.Round((DragY / 10)) * 10)));
                 }
             }
             Call Trigger Full Refresh;
@@ -1413,20 +1374,20 @@ Define Split zone(string #) into(string Y) vertical sections with separation(str
 
 Define Swap segments(string #1) and(string #2) (warp=true)
 {
-    List.InsertItem(SegmentX1, #1, SegmentX1[#2]);
-    List.InsertItem(SegmentY1, #1, SegmentY1[#2]);
-    List.InsertItem(SegmentX2, #1, SegmentX2[#2]);
-    List.InsertItem(SegmentY2, #1, SegmentY2[#2]);
-    List.InsertItem(SegmentType, #1, SegmentType[#2]);
-    List.InsertItem(SegmentId, #1, SegmentId[#2]);
-    List.InsertItem(SegmentArg1, #1, SegmentArg1[#2]);
-    List.ReplaceItem(SegmentX1, (#2 + 1), SegmentX1[(#1 + 1)]);
-    List.ReplaceItem(SegmentY1, (#2 + 1), SegmentY1[(#1 + 1)]);
-    List.ReplaceItem(SegmentX2, (#2 + 1), SegmentX2[(#1 + 1)]);
-    List.ReplaceItem(SegmentY2, (#2 + 1), SegmentY2[(#1 + 1)]);
-    List.ReplaceItem(SegmentType, (#2 + 1), SegmentType[(#1 + 1)]);
-    List.ReplaceItem(SegmentId, (#2 + 1), SegmentId[(#1 + 1)]);
-    List.ReplaceItem(SegmentArg1, (#2 + 1), SegmentArg1[(#1 + 1)]);
+    List.InsertItem(Segment.X1, #1, Segment.X1[#2]);
+    List.InsertItem(Segment.Y1, #1, Segment.Y1[#2]);
+    List.InsertItem(Segment.X2, #1, Segment.X2[#2]);
+    List.InsertItem(Segment.Y2, #1, Segment.Y2[#2]);
+    List.InsertItem(Segment.Type, #1, Segment.Type[#2]);
+    List.InsertItem(Segment.Id, #1, Segment.Id[#2]);
+    List.InsertItem(Segment.Arg1, #1, Segment.Arg1[#2]);
+    List.ReplaceItem(Segment.X1, (#2 + 1), Segment.X1[(#1 + 1)]);
+    List.ReplaceItem(Segment.Y1, (#2 + 1), Segment.Y1[(#1 + 1)]);
+    List.ReplaceItem(Segment.X2, (#2 + 1), Segment.X2[(#1 + 1)]);
+    List.ReplaceItem(Segment.Y2, (#2 + 1), Segment.Y2[(#1 + 1)]);
+    List.ReplaceItem(Segment.Type, (#2 + 1), Segment.Type[(#1 + 1)]);
+    List.ReplaceItem(Segment.Id, (#2 + 1), Segment.Id[(#1 + 1)]);
+    List.ReplaceItem(Segment.Arg1, (#2 + 1), Segment.Arg1[(#1 + 1)]);
     Call Delete Segment((#1 + 1));
     If (EditorSelectedId == #1)
     {

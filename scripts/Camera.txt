@@ -10,7 +10,7 @@ move.cY = 450
 move.dX = 0
 move.dY = 335
 move.x = 180
-move.y = 122.5
+move.y = 115
 move.zoom = 1.3333333333333
 
 
@@ -117,13 +117,13 @@ Define Calculate Minimum Zoom to fit all(string X1)(string Y1)(string X2)(string
 
 Define Find Camera Region for(string X)(string Y) (warp=true)
 {
-    cam.c1 = List.Length(SegmentType);
+    cam.c1 = List.Length(Segment.Type);
     camRegion = 0;
     Repeat Until ((Not ((camRegion == 0))) Or (cam.c1 < 1))
     {
-        If (SegmentType[cam.c1] == "Camera")
+        If (Segment.Type[cam.c1] == "Camera")
         {
-            Call Is(X)(Y) inside bounding box(SegmentX1[cam.c1])(SegmentY1[cam.c1])(SegmentX2[cam.c1])(SegmentY2[cam.c1]) ?;
+            Call Is(X)(Y) inside bounding box(Segment.X1[cam.c1])(Segment.Y1[cam.c1])(Segment.X2[cam.c1])(Segment.Y2[cam.c1]) ?;
             If (inBounds == "true")
             {
                 camRegion = cam.c1;
@@ -152,17 +152,17 @@ Define Is(string X)(string Y) inside bounding box(string X1)(string Y1)(string X
     inBounds = (((abs((X - X1)) < bounds.dX) And (abs((X - X2)) < bounds.dX)) And ((abs((Y - Y1)) < bounds.dY) And (abs((Y - Y2)) < bounds.dY)));
 }
 
-Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType(string CamType) zoom(string Zoom) (transition(string T) ) (warp=true)
+Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType(string CamType) zoom(string Zoom) (transition(string T) ) around(string X)(string Y) (warp=true)
 {
     If (X1 > X2)
     {
-        Call Move Camera in Region(X2)(Y1)(X1)(Y2) camType(CamType) zoom(Zoom) (transition(T) );
+        Call Move Camera in Region(X2)(Y1)(X1)(Y2) camType(CamType) zoom(Zoom) (transition(T) ) around(X)(Y);
     }
     Else
     {
         If (Y1 > Y2)
         {
-            Call Move Camera in Region(X1)(Y2)(X2)(Y1) camType(CamType) zoom(Zoom) (transition(T) );
+            Call Move Camera in Region(X1)(Y2)(X2)(Y1) camType(CamType) zoom(Zoom) (transition(T) ) around(X)(Y);
         }
         Else
         {
@@ -190,7 +190,7 @@ Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType
                     {
                         Call Calculate Full Zoom to fit(X1)(Y1)(X2)(Y2);
                     }
-                    Call Bound(PlayerX)(PlayerY) in bounding box(X1)(Y1)(X2)(Y2) at zoom(move.zoom);
+                    Call Bound(X)(Y) in bounding box(X1)(Y1)(X2)(Y2) at zoom(move.zoom);
                     Call Move Camera Towards(move.x)(move.y)(move.zoom) with transition(T);
                 }
                 Else
@@ -205,7 +205,7 @@ Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType
                         {
                             Call Calculate Full Zoom to fit(X1)(Y1)(X2)(Y2);
                         }
-                        Call Move Camera Towards(PlayerX)(PlayerY)(move.zoom) with transition(T);
+                        Call Move Camera Towards(X)(Y)(move.zoom) with transition(T);
                     }
                     Else
                     {
@@ -216,15 +216,15 @@ Define Move Camera in Region(string X1)(string Y1)(string X2)(string Y2) camType
     }
 }
 
-Define Move Camera in region(string #) transition(string T) (warp=true)
+Define Move Camera in region(string #) transition(string T) around(string X)(string Y) (warp=true)
 {
     If (# == 0)
     {
-        Call Move Camera Towards(PlayerX)(PlayerY)(1) with transition(T);
+        Call Move Camera Towards(X)(Y)(1) with transition(T);
     }
     Else
     {
-        Call Move Camera in Region(SegmentX1[#])(SegmentY1[#])(SegmentX2[#])(SegmentY2[#]) camType(SegmentArg1[#]) zoom(SegmentArg2[#]) (transition(T) );
+        Call Move Camera in Region(Segment.X1[#])(Segment.Y1[#])(Segment.X2[#])(Segment.Y2[#]) camType(Segment.Arg1[#]) zoom(Segment.Arg2[#]) (transition(T) ) around(X)(Y);
     }
 }
 
@@ -262,15 +262,15 @@ Define Start Camera (warp=false)
     Call Start Camera Position;
     Repeat Until (CameraEnabled == "false")
     {
-        Call Find Camera Region for(PlayerX)(PlayerY);
-        Call Move Camera in region(camRegion) transition(8);
+        Call Find Camera Region for(Objects.X[1])(Objects.Y[1]);
+        Call Move Camera in region(camRegion) transition(8) around(Objects.X[1])(Objects.Y[1]);
     }
 }
 
 Define Start Camera Position (warp=true)
 {
-    Call Find Camera Region for(PlayerX)(PlayerY);
-    Call Move Camera in region(camRegion) transition(1);
+    Call Find Camera Region for(Objects.X[1])(Objects.Y[1]);
+    Call Move Camera in region(camRegion) transition(1) around(Objects.X[1])(Objects.Y[1]);
 }
 
 
