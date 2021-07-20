@@ -1,19 +1,19 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
 draw.s1 = 14
-incx = -180.09947787103
-incy = -117.90052212897
-ind = 40.734377591278
+incx = -105.06196760337
+incy = -86.938032396628
+ind = 30.809398126588
 locale = Levels >
 locale.s1 = 3
 padding = 10
 penBounds.x = 250
 penBounds.y = 190
-peri = 844.19895574206
-priorMx = 
-priorMy = 
-priorZone = 19
-priorZoom = 0.75
+peri = 514.12393520674
+priorMx = 360
+priorMy = 160
+priorZone = 0
+priorZoom = 1.3333333333333
 render.c1 = 6
 render.height = 53.333333333333
 render.width = 106.66666666667
@@ -21,7 +21,7 @@ render.x = 120
 render.x2 = 226.66666666667
 render.y = -180
 render.y2 = -126.66666666667
-td = 0.02373716860935
+td = 0.021940137042313
 tools.c1 = 5
 tools.s1 = 14
 _bq = 2

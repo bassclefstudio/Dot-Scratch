@@ -46,9 +46,9 @@ Level# = 1
 LevelName = Level 6
 LocaleHoverText = 
 MouseInputEnabled = false
-MouseX = 
-MouseY = 
-MouseZoneId = 19
+MouseX = 360
+MouseY = 160
+MouseZoneId = 0
 MusicEnabled = true
 Music File (.midi) = 0
 Paused = false
@@ -58,13 +58,13 @@ ResolutionX = 480
 ResolutionY = 360
 StartX = 0
 StartY = 0
-TextKey = Sample
+TextKey = Pause
 TextSubsystemEnabled = true
 UIEnabled = false
-UIName = Editor
-UIOverlayId = 0
-UIOverlayZone = 14
-UIRefreshTrigger = 2
+UIName = Pause
+UIOverlayId = 1
+UIOverlayZone = 1
+UIRefreshTrigger = 0
 UIScaling = 1
 
 
@@ -128,7 +128,7 @@ Objects.vY = {
     0
 }
 Objects.X = { 
-    212.11024042049
+    178.03328259319
 }
 Objects.Y = { 
     -9.1
@@ -501,12 +501,22 @@ StringResources = {
     A Platformer Puzzle Game
     Levels >
     Sample
+    Main Menu
+    Edit
+    Restart
+    Back
+    Pause
 }
 StringTranslations = { 
     BassClefStudio presents
     A Platformer Puzzle Game
     Levels >
     Sample
+    Main Menu
+    Edit
+    Restart
+    Back
+    Pause
 }
 WallTypes = { 
     Wall

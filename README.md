@@ -1,5 +1,5 @@
 # Dot-Scratch
-This is the Git repository for the Scratch project Dot: Return ([link](https://scratch.mit.edu/projects/412149960)), a simplistic vector-based platformer engine designed in Scratch. It is hosted on Git thanks to [RokCoder's sb3-commit project](https://github.com/rokcoder-scratch/sb3-commit), which converts the Scratch `.sb3` file to a text file that can be published to source control.
+This is the Git repository for the Scratch project Dot: Return ([link](https://scratch.mit.edu/projects/554521659)), a simplistic vector-based platformer engine designed in Scratch. It is hosted on Git thanks to [RokCoder's sb3-commit project](https://github.com/rokcoder-scratch/sb3-commit), which converts the Scratch `.sb3` file to a text file that can be published to source control.
 
 ## Scratch Credits
 

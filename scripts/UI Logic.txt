@@ -1,7 +1,7 @@
 //----- Variables -----------------------------------------------------------------------------------------------------
 
-addZone.h = 280
-addZone.w = 400
+addZone.h = 216
+addZone.w = 240
 addZone.x = 0
 addZone.y = 0
 createSegment.id = 19
@@ -13,14 +13,18 @@ lastDragY2 =
 maxClickDistance = 400
 priorDialogContent = Ondine: Sorting music data...
 priorDialogValue = 1
-zones.c1 = 2
-zones.s1 = 32
+zones.c1 = 4
+zones.s1 = 40
 
 
 //----- Lists ---------------------------------------------------------------------------------------------------------
 
-dialogs.id = { }
-dialogs.zone = { }
+dialogs.id = { 
+    1
+}
+dialogs.zone = { 
+    1
+}
 textSegments = { }
 _chData0 = { }
 _chData1 = { }

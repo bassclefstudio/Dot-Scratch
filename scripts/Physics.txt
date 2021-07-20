@@ -9,7 +9,6 @@ behaviors.portal.x = 0
 behaviors.portal.y = 12.5
 closest.c1 = 43
 collision.distance = 9.9
-collisionId = 
 collisions.c1 = 44
 collisions.s1 = 10
 collisions.s2 = 1
@@ -18,7 +17,7 @@ constants.mouseThreshold = 9
 constants.rigidBodyDistance = 10
 constants.rigidBodyPadding = 0.9
 math.angle = -90
-math.distance.u = 4.7981626596585
+math.distance.u = 5.3661119567802
 math.distanceSquared = 0
 math.inBounds = false
 math.normal.length = 500
@@ -36,7 +35,7 @@ physics.acc.X = 0
 physics.acc.Xsign = 1
 physics.acc.Y = -1
 physics.acc.Ysign = -1
-physics.pos.X = 212.11024042049
+physics.pos.X = 178.03328259319
 physics.pos.Y = -9.1
 physics.vel.length = 0
 physics.vel.X = 0
@@ -422,7 +421,6 @@ Define Get collision between wall(string #) and point(string X)(string Y) distan
         If (math.distanceSquared < D)
         {
             math.inBounds = "true";
-            collisionId = #;
         }
         Else
         {
